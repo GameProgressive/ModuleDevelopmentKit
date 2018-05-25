@@ -54,10 +54,11 @@ typedef void* mdk_tcp;
 typedef void* mdk_udp;
 typedef void* mdk_mysql;
 
-#include "Server.h"
-#include "MSString.h"
-#include "Query.h"
 #include "Log.h"
+#include "MSString.h"
+#include "Server.h"
+#include "Query.h"
+#include "Database.h"
 
 /* Module definition */
 typedef std::map<std::string, std::string> ModuleConfigMap;

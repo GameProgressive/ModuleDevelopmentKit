@@ -24,9 +24,9 @@
 #endif
 
 /* Logging */
-#define LOG_INFO(name, fmt, ...) RSLog(name, "INFO", fmt, __VA_ARGS__)
-#define LOG_ERROR(name, fmt, ...) RSLog(name, "ERROR", fmt, __VA_ARGS__)
-#define LOG_WARN(name, fmt, ...) RSLog(name, "WARN", fmt, __VA_ARGS__)
+#define LOG_INFO(name, fmt, ...) MSLog(name, "INFO", fmt, __VA_ARGS__)
+#define LOG_ERROR(name, fmt, ...) MSLog(name, "ERROR", fmt, __VA_ARGS__)
+#define LOG_WARN(name, fmt, ...) MSLog(name, "WARN", fmt, __VA_ARGS__)
 GPMSAPI void MSLog(const char *name, const char *type, const char *fmt, ...);
 
 #endif

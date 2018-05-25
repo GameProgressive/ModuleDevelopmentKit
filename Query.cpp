@@ -22,49 +22,6 @@
 #include <mysql.h> /*Still using MariaDB Connector C*/
 #include <stdio.h>
 
-GPMSAPI std::string EscapeSQLString(mdk_mysql* con, std::string str)
-{
-	char *x = (char*)malloc(sizeof(char)*(str.length()*2+5));
-	if (!x)
-		return "";
-	
-	mysql_real_escape_string((MYSQL*)con, x, str.c_str(), str.length());
-	std::string k = std::string(x);
-	
-	free(x);
-	return k;
-}
-
-GPMSAPI void EscapeSQLString(mdk_mysql* c, std::string &str)
-{
-	str = EscapeSQLString(c, str.c_str());
-}
-
-GPMSAPI bool RunDBQuery(mdk_mysql* con, std::string str)
-{
-	if (mysql_query((MYSQL*)con, str.c_str()) != 0)
-	{
-		printf("[Query] Cannot execute query. Error: %s\n", mysql_error((MYSQL*)con));
-		return false;		
-	}
-	
-	return true;
-}
-
-GPMSAPI bool RunDBQuery(mdk_mysql *con, std::string query, ResultSet **rs)
-{
-	*rs = new ResultSet();
-	if (!(*rs)->executeQuery(con, query))
-	{
-		delete rs;
-
-		printf("[Query] Cannot execute query. Error: %s\n",  mysql_error((MYSQL*)con));
-		return false;		
-	}
-
-	return true;
-}
-
 GPMSAPI ResultSet::ResultSet()
 {
 	m_pos = 0;
@@ -90,14 +47,14 @@ GPMSAPI bool ResultSet::executeQuery(mdk_mysql* con, std::string str)
 	
 	if (mysql_query((MYSQL*)con, str.c_str()) != 0)
 	{
-		printf("[Query] Cannot execute query. Error: %s\n", mysql_error((MYSQL*)con));
+		LOG_ERROR("Query", "Cannot execute query. Error: %s\n", mysql_error((MYSQL*)con));
 		return false;		
 	}
 	
 	result = mysql_store_result((MYSQL*)con);
 	if (!result)
 	{
-		printf("[Query] Cannot execute query. Error: %s\n", mysql_error((MYSQL*)con));
+		LOG_ERROR("Query" "Cannot execute query. Error: %s\n", mysql_error((MYSQL*)con));
 		return false;				
 	}
 	
@@ -118,7 +75,7 @@ GPMSAPI bool ResultSet::executeQuery(mdk_mysql* con, std::string str)
 	if (row == NULL)
 	{
 		mysql_free_result(result);
-		printf("[Query] Cannot execute query. Error: %s\n", mysql_error((MYSQL*)con));
+		LOG_ERROR("Query", "Cannot execute query. Error: %s\n", mysql_error((MYSQL*)con));
 		return false;			
 	}
 	

@@ -46,44 +46,4 @@ private:
 	size_t m_pos;
 };
 
-/**
-	Function: RunDBQuery
-	Description: Executes a generic query
-	Parameters:
-		mysql => the connection to be executed the query
-		str => the query
-	Return: true if the query was successfully executed, otherwise false
-*/
-GPMSAPI bool RunDBQuery(mdk_mysql* mysql, std::string str);
-
-/**
-	Function: RunDBQuery
-	Description: Executes a generic query and store it's result to the passed result res
-	Parameters:
-		mysql => the connection to be executed the query
-		str => the query
-		rs => the result set to be filled
-	Return: true if the query was successfully executed, otherwise false
-*/
-GPMSAPI bool RunDBQuery(mdk_mysql* mysql, std::string str, ResultSet **rs);
-
-/**
-	Function: EscapeSQLString
-	Description: Add escapes from a standard string
-	Parameters:
-		con => The connection to be used to perform the escaping
-		str => The string to be escaped
-	Return: Escaped string
-*/
-GPMSAPI std::string EscapeSQLString(mdk_mysql* con, std::string str);
-
-/**
-	Function: EscapeSQLString
-	Description: Modify the passed string by adding escapes
-	Parameters:
-		con => The connection to be used to perform the escaping
-		str => The string to be escaped
-*/
-GPMSAPI void EscapeSQLString(mdk_mysql* con, std::string &str);
-
 #endif

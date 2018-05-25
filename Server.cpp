@@ -138,7 +138,7 @@ bool GPMSAPI Server::Bind(const char *ip, int port, bool udp)
 
 	if (r)
 	{
-		printf("[Server] %s listen error: %s\n", udp ? "UDP" : "TCP", uv_strerror(r));
+		LOG_ERROR("Server", "%s listen error: %s\n", udp ? "UDP" : "TCP", uv_strerror(r));
 		return false;
 	}
 
