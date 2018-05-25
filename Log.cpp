@@ -29,9 +29,10 @@ GPMSAPI void MSLog(const char *name, const char *type, const char *fmt, ...)
 		return;
 	
 	if (name)
-		printf("[%s] ");
+		printf("[%s] ", name);
+	
 	if (type)
-		printf("[%s] ");
+		printf("[%s] ", type);
 		
 	printf(">> ");
 	va_start(vl, fmt);

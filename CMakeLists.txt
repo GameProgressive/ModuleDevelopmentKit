@@ -33,15 +33,15 @@ endif()
 add_subdirectory(libuv-cmake)
 include_directories("libuv-cmake/libuv/include")
 
+# Set CMake output directory
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
 # Mariadb inclusion
 set(WITH_UNIT_TESTS OFF) # Remove useless tests from mariadb build
 add_subdirectory(mariadb-connector-c)
 include_directories("mariadb-connector-c/include")
 include_directories("${CMAKE_BINARY_DIR}/mariadb-connector-c/include") # mariadb config
-
-# Set CMake output directory
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 set(SOURCES
 	${CMAKE_CURRENT_LIST_DIR}/MasterServerMDK.h
@@ -61,10 +61,8 @@ if (WIN32)
 		${SOURCES}
 		${CMAKE_CURRENT_LIST_DIR}/resource.h
 	)
-	set_source_files_properties(commom.rc PROPERTIES LANGUAGE RC)
+	set_source_files_properties(${CMAKE_CURRENT_LIST_DIR}/Common.rc PROPERTIES LANGUAGE RC)
 endif()
 
-add_library(GPMDK SHARED ${SOURCES})
-target_link_libraries(GPMDK uv mariadbclient)
-
-
+add_library(MDK SHARED ${SOURCES})
+target_link_libraries(MDK uv libmariadb)
