@@ -1,0 +1,6 @@
+[submodule "mariadb-connector-c"]
+	path = mariadb-connector-c
+	url = https://github.com/MariaDB/mariadb-connector-c
+[submodule "libuv-cmake"]
+	path = libuv-cmake
+	url = https://github.com/GameProgressive/libuv-cmake
