@@ -81,6 +81,11 @@ GPMSAPI bool Database::RunDBQuery(mdk_mysql* con, std::string str)
 	return true;
 }
 
+GPMSAPI void Database::Init(mdk_mysql*mysql)
+{
+	mysql_init((MYSQL*)mysql);
+}
+
 GPMSAPI bool Database::RunDBQuery(mdk_mysql *con, std::string query, ResultSet **rs)
 {
 	*rs = new ResultSet();
