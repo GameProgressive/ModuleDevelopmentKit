@@ -41,7 +41,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(WITH_UNIT_TESTS OFF) # Remove useless tests from mariadb build
 add_subdirectory(mariadb-connector-c)
 include_directories("mariadb-connector-c/include")
-include_directories("${CMAKE_BINARY_DIR}/mariadb-connector-c/include") # mariadb config
+include_directories("${CMAKE_CURRENT_BINARY_DIR}/mariadb-connector-c/include") # mariadb config
 
 set(SOURCES
 	${CMAKE_CURRENT_LIST_DIR}/MasterServerMDK.h
