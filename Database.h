@@ -26,8 +26,47 @@
 class Database
 {
 public:
-	GPMSAPI static bool Connect(mdk_mysql *mysql);
+	/**
+	Function: Connect
+	Description: Connec to a MySQL connection
+	Parameters:
+		mysql => the connection to be started
+		host => the host to be used to connect
+		port => the port to be used to connect
+		username => username used to login
+		dbname => database name used to login
+		password => password to be used (leave NULL for no password)
+	Return: true if the connection succeded, otherwise false
+	*/
+	GPMSAPI static bool Connect(mdk_mysql* mysql, const char *host, int port, const char *username, const char *dbname, const char *password = NULL);
+
+	/**
+	Function: Connect
+	Description: Connec to a MySQL connection
+	Parameters:
+		mysql => the connection to be started
+		socket => the socket to be used for connect
+		username => username used to login
+		dbname => database name used to login
+		password => password to be used (leave NULL for no password)
+	Return: true if the connection succeded, otherwise false
+	*/
+	GPMSAPI static bool Connect(mdk_mysql* mysql, const char* socket, const char *username, const char *dbname, const char* password = NULL);
+	
+	/**
+	Function: Disconnect
+	Description: Disconnect a MySQL connection
+	Parameters:
+		mysql => the connection to be disconnected	
+	*/
 	GPMSAPI static void Disconnect(mdk_mysql *mysql);
+	
+	/**
+	Function: Init
+	Description: Initialize a MySQL connection
+	Parameters:
+		mysql => the connection to be initialized	
+	*/
 	GPMSAPI static void Init(mdk_mysql *mysql);
 
 	
@@ -78,7 +117,7 @@ public:
 		con => The connection to be checked
 	Return: true if it's connected, otherwise false
 	*/
-	GPSMAPI static bool IsConnected(mdk_mysql* con);
+	GPMSAPI static bool IsConnected(mdk_mysql* con);
 };
 
 #endif

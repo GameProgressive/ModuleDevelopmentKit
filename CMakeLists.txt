@@ -54,6 +54,8 @@ set(SOURCES
 	${CMAKE_CURRENT_LIST_DIR}/msstdint.h
 	${CMAKE_CURRENT_LIST_DIR}/Log.h
 	${CMAKE_CURRENT_LIST_DIR}/Log.cpp
+	${CMAKE_CURRENT_LIST_DIR}/Database.cpp
+	${CMAKE_CURRENT_LIST_DIR}/Database.h
 )
 
 if (WIN32)

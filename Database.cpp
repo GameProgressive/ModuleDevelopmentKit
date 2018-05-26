@@ -16,31 +16,31 @@
 	specific language governing permissions and limitations
 	under the License.
 */
-#include "Database.h"
-#include "MSConfig.h"
+#define GPMS_EXPORT 1 /*Export the methods*/
+#include "MasterServerMDK.h"
 
 #include <stdio.h>
 #include <mysql.h>
 
-GPMSAPI bool Database::Connect(mdk_mysql* mysql)
+bool _InternalConnect(MYSQL* mysql, const char *username, const char *password, const char *dbname, const char *host, int port, const char *socket)
 {
-	char *pass = (char*)CConfig::GetDatabasePassword();
-	char *sock = (char*)CConfig::GetDatabaseSocket();
-	
-	if (strlen(pass) < 1)
-		pass = NULL;
-
-	if (strlen(sock) < 1)
-		sock = NULL;
-
-	if (!mysql_real_connect((MYSQL*)mysql, sock ? NULL : CConfig::GetDatabaseHost(), CConfig::GetDatabaseUsername(),
-		pass, CConfig::GetDatabaseName(), CConfig::GetDatabasePort(), sock, 0))
+	if (!mysql_real_connect(mysql, host, username, password, dbname, port, socket, 0))
 	{
 		LOG_ERROR("Database", "Cannot connect to MySQL Server. Error: %s\n", mysql_error(mysql));
 		return false;
 	}
 
 	return true;
+}
+
+GPMSAPI bool Database::Connect(mdk_mysql* mysql, const char *host, int port, const char *username, const char *dbname, const char *password)
+{
+	return _InternalConnect((MYSQL*)mysql, username, password, dbname, host, port, NULL);
+}
+
+GPMSAPI bool Database::Connect(mdk_mysql* mysql, const char* socket, const char *username, const char *dbname, const char* password)
+{
+	return _InternalConnect((MYSQL*)mysql, username, password, dbname, NULL, 0, socket);
 }
 
 GPMSAPI void Database::Disconnect(mdk_mysql *mysql)
@@ -97,7 +97,7 @@ GPMSAPI bool Database::RunDBQuery(mdk_mysql *con, std::string query, ResultSet *
 
 GPMSAPI bool Database::IsConnected(mdk_mysql *con)
 {
-	if (mysql_stat(con) == NULL)
+	if (mysql_stat((MYSQL*)con) == NULL)
 		return false;
 	
 	return true;
