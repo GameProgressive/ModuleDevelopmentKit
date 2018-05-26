@@ -94,3 +94,11 @@ GPMSAPI bool Database::RunDBQuery(mdk_mysql *con, std::string query, ResultSet *
 
 	return true;
 }
+
+GPMSAPI bool Database::IsConnected(mdk_mysql *con)
+{
+	if (mysql_stat(con) == NULL)
+		return false;
+	
+	return true;
+}

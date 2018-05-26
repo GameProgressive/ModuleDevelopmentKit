@@ -70,6 +70,15 @@ public:
 		str => The string to be escaped
 	*/
 	GPMSAPI static void EscapeSQLString(mdk_mysql* con, std::string &str);
+	
+	/**
+	Function: IsConnected
+	Description: Check if a connection is still alive
+	Parameters:
+		con => The connection to be checked
+	Return: true if it's connected, otherwise false
+	*/
+	GPSMAPI static bool IsConnected(mdk_mysql* con);
 };
 
 #endif
