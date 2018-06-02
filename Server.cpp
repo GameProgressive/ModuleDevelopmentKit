@@ -352,3 +352,16 @@ void _OnUDPNewConnection(uv_stream_t *server, int status)
 	if (status != 0)
 		uv_close((uv_handle_t*)client, _OnClose);
 }
+
+GPMSAPI ClientData* Server::GetData(mdk_client* client)
+{
+	uv_stream_t* stream = (uv_stream_t*)client;
+	
+	if (!stream)
+		return NULL;
+	
+	if (!stream->data)
+		return NULL;
+	
+	return (ClientData*)stream->data;
+}

@@ -24,6 +24,7 @@
 #endif
 
 class Server;
+class ClientData;
 
 typedef struct SServerData
 {
@@ -121,6 +122,12 @@ public:
 		Description: Run the server
 	*/
 	void GPMSAPI Run(); 
+	
+	/*
+		Function: GetData
+		Description: Get passed data to a socket
+	*/
+	static GPMSAPI ClientData* GetData(mdk_client* client);
 
 private:
 	mdk_loop* m_loop;
