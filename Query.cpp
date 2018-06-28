@@ -127,7 +127,7 @@ double ResultSet::getDouble(size_t index)
 	if (m_rows.at(m_pos).size() < index)
 		return 0;
 	
-	return std::stof(m_rows.at(m_pos).at(index));
+	return atof(m_rows.at(m_pos).at(index).c_str());
 }
 
 unsigned int atoui(const char *x)
@@ -156,5 +156,5 @@ GPMSAPI int ResultSet::getInt(size_t index)
 	if (m_rows.at(m_pos).size() < index)
 		return 0;
 	
-	return std::stoi(m_rows.at(m_pos).at(index));
+	return atoi(m_rows.at(m_pos).at(index).c_str());
 }
