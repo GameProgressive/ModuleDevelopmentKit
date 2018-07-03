@@ -15,7 +15,7 @@
 #	specific language governing permissions and limitations
 #	under the License.
 #
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.0)
 project("MasterServerMDK")
 
 # Add definitions for w32 build that dosen't support _WIN32 macro
@@ -30,8 +30,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 endif()
 
 # LibUV inclusions
-add_subdirectory(libuv-cmake)
-include_directories("libuv-cmake/libuv/include")
+add_subdirectory(libuv)
+include_directories("libuv/include")
 
 # Set CMake output directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
