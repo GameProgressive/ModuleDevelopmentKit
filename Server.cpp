@@ -86,22 +86,20 @@ void _OnWrite(uv_write_t* req, int status);
 
 GPMSAPI Server::Server()
 {
-	m_loop = uv_loop_new();
+	m_loop = (mdk_loop*)uv_loop_new();
 }
 
 GPMSAPI Server::~Server()
 {
 	if (m_loop)
 		uv_loop_close((uv_loop_t*)m_loop);
+	m_loop = NULL;
 }
 
 bool GPMSAPI Server::Bind(const char *ip, int port, bool udp)
 {
 	int r = 0;
 	struct sockaddr_in addr;
-	
-	if (!loop)
-		return false;
 
 	m_data.loop = m_loop;
 	m_data.instance = this;
@@ -109,9 +107,9 @@ bool GPMSAPI Server::Bind(const char *ip, int port, bool udp)
 	// Initialize the socket
 
 	if (udp)
-		uv_udp_init(m_loop, (uv_udp_t*)&m_udp);
+		uv_udp_init((uv_loop_t*)m_loop, (uv_udp_t*)&m_udp);
 	else
-		uv_tcp_init(m_loop, (uv_tcp_t*)&m_tcp);
+		uv_tcp_init((uv_loop_t*)m_loop, (uv_tcp_t*)&m_tcp);
 
 	// Resolve ip and port
 	uv_ip4_addr(ip, port, &addr);
@@ -196,7 +194,7 @@ int GPMSAPI Server::GetIPFromStream(mdk_client *client)
 
 void GPMSAPI Server::Run()
 {
-	uv_run((uv_loop_t*)loop, UV_RUN_DEFAULT);
+	uv_run((uv_loop_t*)m_loop, UV_RUN_DEFAULT);
 }
 
 // Pure virtual functions

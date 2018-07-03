@@ -122,7 +122,12 @@ public:
 		Description: Get passed data to a socket
 	*/
 	static GPMSAPI ClientData* GetData(mdk_client* client);
-
+	
+	/*
+		Function: Run
+		Description: Run the Server
+	*/
+	void GPMSAPI Run();
 private:
 	mdk_loop* m_loop;
 
