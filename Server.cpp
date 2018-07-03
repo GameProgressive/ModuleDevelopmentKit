@@ -87,18 +87,27 @@ void _OnWrite(uv_write_t* req, int status);
 
 GPMSAPI Server::Server()
 {
-	m_loop = (mdk_loop)malloc(sizeof uv_loop_t);
-	uv_loop_init((uv_loop_t*)m_loop);
+	uv_loop_t* real_loop = (uv_loop_t*)malloc(sizeof uv_loop_t);
+	uv_loop_init(real_loop);
+	m_loop = (mdk_loop)real_loop;
 }
 
 GPMSAPI Server::~Server()
 {
 	if (m_loop)
 	{
-		uv_loop_close((uv_loop_t*)m_loop);
-		free(m_loop);
+		uv_loop_t* real_loop = (uv_loop_t*)m_loop;
+		uv_loop_close(real_loop);
+		free(real_loop);
 	}
 	
+	if (m_udp)
+		free(m_udp);
+	if (m_tcp)
+		free(m_tcp);
+	
+	m_tcp = NULL;
+	m_udp = NULL;
 	m_loop = NULL;
 }
 
@@ -106,41 +115,49 @@ bool GPMSAPI Server::Bind(const char *ip, int port, bool udp)
 {
 	int r = 0;
 	struct sockaddr_in addr;
-
-	m_data.loop = m_loop;
-	m_data.instance = this;
+	uv_loop_t*  xloop = (uv_loop_t*)m_loop;
+	uv_udp_t* real_udp = NULL;
+	uv_tcp_t* real_tcp = NULL;
 
 	// Initialize the socket
 
 	if (udp)
-		uv_udp_init((uv_loop_t*)m_loop, (uv_udp_t*)&m_udp);
+	{
+		real_udp = (uv_udp_t*)malloc(sizeof uv_udp_t);
+		uv_udp_init(xloop, real_udp);
+	}
 	else
-		uv_tcp_init((uv_loop_t*)m_loop, (uv_tcp_t*)&m_tcp);
+	{
+		real_tcp = (uv_tcp_t*)malloc(sizeof uv_tcp_t);
+		uv_tcp_init(xloop, real_tcp);
+	}
 
 	// Resolve ip and port
 	uv_ip4_addr(ip, port, &addr);
 
 	if (udp)
-		uv_udp_bind((uv_udp_t*)&m_udp, (const struct sockaddr*)&addr, 0);
+		uv_udp_bind(real_udp, (const struct sockaddr*)&addr, 0);
 	else
-		uv_tcp_bind((uv_tcp_t*)&m_tcp, (const struct sockaddr*)&addr, 0);
+		uv_tcp_bind(real_tcp, (const struct sockaddr*)&addr, 0);
 
 	/* Listen the socket */
 	if (udp)
-		r = uv_listen((uv_stream_t*)&m_udp, DEFAULT_BACKLOG, _OnUDPNewConnection);
+		r = uv_listen((uv_stream_t*)real_udp, DEFAULT_BACKLOG, _OnUDPNewConnection);
 	else
-		r = uv_listen((uv_stream_t*)&m_tcp, DEFAULT_BACKLOG, _OnTCPNewConnection);
+		r = uv_listen((uv_stream_t*)real_tcp, DEFAULT_BACKLOG, _OnTCPNewConnection);
 
 	// Access the loop from the other functions
 	if (udp)
 	{
-		uv_udp_t* udpp = (uv_udp_t*)&m_udp;
-		udpp->data = (void*)&m_data;
+		m_data.loop = (mdk_loop)xloop;
+		m_data.instance = this;
+		real_udp->data = (void*)&m_data;
 	}
 	else
 	{
-		uv_tcp_t* tcpp = (uv_tcp_t*)&m_tcp;
-		tcpp->data = (void*)&m_data;
+		m_data.loop = (mdk_loop)xloop;
+		m_data.instance = this;
+		real_tcp->data = (void*)&m_data;
 	}
 
 	if (r)
@@ -148,6 +165,9 @@ bool GPMSAPI Server::Bind(const char *ip, int port, bool udp)
 		LOG_ERROR("Server", "%s listen error: %s\n", udp ? "UDP" : "TCP", uv_strerror(r));
 		return false;
 	}
+
+	m_tcp = (mdk_tcp)real_tcp;
+	m_udp = (mdk_udp)real_udp;
 
 	return true;
 }
