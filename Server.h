@@ -50,7 +50,7 @@ public:
 			port => The port to bind
 			udp => True if this is a UDP server
 	*/
-	bool GPMSAPI Bind(mdk_loop* loop, const char *ip, int port, bool udp);
+	bool GPMSAPI Bind(const char *ip, int port, bool udp);
 
 	/*
 		Function: Write
@@ -176,10 +176,5 @@ protected:
 	void *m_data;
 	bool m_udp;
 };
-
-// Loop handling
-mdk_loop* CreateMDKLoop(bool defaultLoop = true);
-void FreeMDKLoop(mdk_loop* loop);
-void RunMDKLoop(mdk_loop* loop);
 
 #endif
