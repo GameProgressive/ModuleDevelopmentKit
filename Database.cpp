@@ -17,7 +17,7 @@
 	under the License.
 */
 #define GPMS_EXPORT 1 /*Export the methods*/
-#include "MasterServerMDK.h"
+#include <MDK/MasterServerMDK.h>
 
 #include <stdio.h>
 #include <mysql.h>
@@ -33,17 +33,17 @@ bool _InternalConnect(MYSQL* mysql, const char *username, const char *password, 
 	return true;
 }
 
-GPMSAPI bool Database::Connect(mdk_mysql* mysql, const char *host, int port, const char *username, const char *dbname, const char *password)
+GPMSAPI bool Database::Connect(mdk_mysql mysql, const char *host, int port, const char *username, const char *dbname, const char *password)
 {
 	return _InternalConnect((MYSQL*)mysql, username, password, dbname, host, port, NULL);
 }
 
-GPMSAPI bool Database::Connect(mdk_mysql* mysql, const char* socket, const char *username, const char *dbname, const char* password)
+GPMSAPI bool Database::Connect(mdk_mysql mysql, const char* socket, const char *username, const char *dbname, const char* password)
 {
 	return _InternalConnect((MYSQL*)mysql, username, password, dbname, NULL, 0, socket);
 }
 
-GPMSAPI void Database::Disconnect(mdk_mysql *mysql)
+GPMSAPI void Database::Disconnect(mdk_mysql mysql)
 {
 	if (mysql)
 		mysql_close((MYSQL*)mysql);
@@ -52,7 +52,7 @@ GPMSAPI void Database::Disconnect(mdk_mysql *mysql)
 }
 
 
-GPMSAPI std::string Database::EscapeSQLString(mdk_mysql* con, std::string str)
+GPMSAPI std::string Database::EscapeSQLString(mdk_mysql con, std::string str)
 {
 	char *x = (char*)malloc(sizeof(char)*(str.length()*2+5));
 	if (!x)
@@ -65,12 +65,12 @@ GPMSAPI std::string Database::EscapeSQLString(mdk_mysql* con, std::string str)
 	return k;
 }
 
-GPMSAPI void Database::EscapeSQLString(mdk_mysql* c, std::string &str)
+GPMSAPI void Database::EscapeSQLString(mdk_mysql c, std::string &str)
 {
 	str = EscapeSQLString(c, str.c_str());
 }
 
-GPMSAPI bool Database::RunDBQuery(mdk_mysql* con, std::string str)
+GPMSAPI bool Database::RunDBQuery(mdk_mysql con, std::string str)
 {
 	if (mysql_query((MYSQL*)con, str.c_str()) != 0)
 	{
@@ -81,12 +81,12 @@ GPMSAPI bool Database::RunDBQuery(mdk_mysql* con, std::string str)
 	return true;
 }
 
-GPMSAPI void Database::Init(mdk_mysql*mysql)
+GPMSAPI void Database::Init(mdk_mysql mysql)
 {
 	mysql_init((MYSQL*)mysql);
 }
 
-GPMSAPI bool Database::RunDBQuery(mdk_mysql *con, std::string query, ResultSet **rs)
+GPMSAPI bool Database::RunDBQuery(mdk_mysql con, std::string query, ResultSet **rs)
 {
 	*rs = new ResultSet();
 	if (!(*rs)->executeQuery(con, query))
@@ -100,7 +100,7 @@ GPMSAPI bool Database::RunDBQuery(mdk_mysql *con, std::string query, ResultSet *
 	return true;
 }
 
-GPMSAPI bool Database::IsConnected(mdk_mysql *con)
+GPMSAPI bool Database::IsConnected(mdk_mysql con)
 {
 	if (mysql_stat((MYSQL*)con) == NULL)
 		return false;

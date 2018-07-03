@@ -38,7 +38,7 @@ public:
 		password => password to be used (leave NULL for no password)
 	Return: true if the connection succeded, otherwise false
 	*/
-	GPMSAPI static bool Connect(mdk_mysql* mysql, const char *host, int port, const char *username, const char *dbname, const char *password = NULL);
+	GPMSAPI static bool Connect(mdk_mysql mysql, const char *host, int port, const char *username, const char *dbname, const char *password = NULL);
 
 	/**
 	Function: Connect
@@ -51,7 +51,7 @@ public:
 		password => password to be used (leave NULL for no password)
 	Return: true if the connection succeded, otherwise false
 	*/
-	GPMSAPI static bool Connect(mdk_mysql* mysql, const char* socket, const char *username, const char *dbname, const char* password = NULL);
+	GPMSAPI static bool Connect(mdk_mysql mysql, const char* socket, const char *username, const char *dbname, const char* password = NULL);
 	
 	/**
 	Function: Disconnect
@@ -59,7 +59,7 @@ public:
 	Parameters:
 		mysql => the connection to be disconnected	
 	*/
-	GPMSAPI static void Disconnect(mdk_mysql *mysql);
+	GPMSAPI static void Disconnect(mdk_mysql mysql);
 	
 	/**
 	Function: Init
@@ -67,8 +67,7 @@ public:
 	Parameters:
 		mysql => the connection to be initialized	
 	*/
-	GPMSAPI static void Init(mdk_mysql *mysql);
-
+	GPMSAPI static void Init(mdk_mysql mysql);
 	
 	/**
 	Function: RunDBQuery
@@ -78,7 +77,7 @@ public:
 		str => the query
 	Return: true if the query was successfully executed, otherwise false
 	*/
-	GPMSAPI static bool RunDBQuery(mdk_mysql* mysql, std::string str);
+	GPMSAPI static bool RunDBQuery(mdk_mysql mysql, std::string str);
 
 	/**
 	Function: RunDBQuery
@@ -89,7 +88,7 @@ public:
 		rs => the result set to be filled
 	Return: true if the query was successfully executed, otherwise false
 	*/
-	GPMSAPI static bool RunDBQuery(mdk_mysql* mysql, std::string str, ResultSet **rs);
+	GPMSAPI static bool RunDBQuery(mdk_mysql mysql, std::string str, ResultSet **rs);
 
 	/**
 	Function: EscapeSQLString
@@ -99,7 +98,7 @@ public:
 		str => The string to be escaped
 	Return: Escaped string
 	*/
-	GPMSAPI static std::string EscapeSQLString(mdk_mysql* con, std::string str);
+	GPMSAPI static std::string EscapeSQLString(mdk_mysql con, std::string str);
 
 	/**
 	Function: EscapeSQLString
@@ -108,7 +107,7 @@ public:
 		con => The connection to be used to perform the escaping
 		str => The string to be escaped
 	*/
-	GPMSAPI static void EscapeSQLString(mdk_mysql* con, std::string &str);
+	GPMSAPI static void EscapeSQLString(mdk_mysql con, std::string &str);
 	
 	/**
 	Function: IsConnected
@@ -117,7 +116,7 @@ public:
 		con => The connection to be checked
 	Return: true if it's connected, otherwise false
 	*/
-	GPMSAPI static bool IsConnected(mdk_mysql* con);
+	GPMSAPI static bool IsConnected(mdk_mysql con);
 };
 
 #endif

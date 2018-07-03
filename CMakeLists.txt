@@ -29,13 +29,17 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 endif()
 
+# Set CMake output directory
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
 # LibUV inclusions
 add_subdirectory(libuv)
 include_directories("libuv/include")
 
-# Set CMake output directory
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+# Main MDK inclusions
+include_directories("include")
+
 
 # Mariadb inclusion
 set(WITH_UNIT_TESTS OFF) # Remove useless tests from mariadb build
@@ -44,18 +48,18 @@ include_directories("mariadb-connector-c/include")
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/mariadb-connector-c/include") # mariadb config
 
 set(SOURCES
-	${CMAKE_CURRENT_LIST_DIR}/MasterServerMDK.h
+	${CMAKE_CURRENT_LIST_DIR}/include/MDK/MasterServerMDK.h
 	${CMAKE_CURRENT_LIST_DIR}/Query.cpp
-	${CMAKE_CURRENT_LIST_DIR}/Query.h
+	${CMAKE_CURRENT_LIST_DIR}/include/MDK/Query.h
 	${CMAKE_CURRENT_LIST_DIR}/MSString.cpp
-	${CMAKE_CURRENT_LIST_DIR}/MSString.h
+	${CMAKE_CURRENT_LIST_DIR}/include/MDK/MSString.h
 	${CMAKE_CURRENT_LIST_DIR}/Server.cpp
-	${CMAKE_CURRENT_LIST_DIR}/Server.h
-	${CMAKE_CURRENT_LIST_DIR}/msstdint.h
-	${CMAKE_CURRENT_LIST_DIR}/Log.h
+	${CMAKE_CURRENT_LIST_DIR}/include/MDK/Server.h
+	${CMAKE_CURRENT_LIST_DIR}/include/MDK/msstdint.h
+	${CMAKE_CURRENT_LIST_DIR}/include/MDK/Log.h
 	${CMAKE_CURRENT_LIST_DIR}/Log.cpp
 	${CMAKE_CURRENT_LIST_DIR}/Database.cpp
-	${CMAKE_CURRENT_LIST_DIR}/Database.h
+	${CMAKE_CURRENT_LIST_DIR}/include/MDK/Database.h
 )
 
 if (WIN32)

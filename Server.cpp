@@ -17,7 +17,7 @@
 	under the License.
 */
 #define GPMS_EXPORT 1 /*Export the methods*/
-#include "MasterServerMDK.h"
+#include <MDK/MasterServerMDK.h>
 
 #include <string.h>
 #include <uv.h> /* Still using libUV */
@@ -84,15 +84,21 @@ void _OnRead(uv_stream_t *stream, ssize_t size, const uv_buf_t *buf);
 void _OnClose(uv_handle_t *handle);
 void _OnWrite(uv_write_t* req, int status);
 
+
 GPMSAPI Server::Server()
 {
-	m_loop = (mdk_loop*)uv_loop_new();
+	m_loop = (mdk_loop)malloc(sizeof uv_loop_t);
+	uv_loop_init((uv_loop_t*)m_loop);
 }
 
 GPMSAPI Server::~Server()
 {
 	if (m_loop)
+	{
 		uv_loop_close((uv_loop_t*)m_loop);
+		free(m_loop);
+	}
+	
 	m_loop = NULL;
 }
 
@@ -146,7 +152,7 @@ bool GPMSAPI Server::Bind(const char *ip, int port, bool udp)
 	return true;
 }
 
-void GPMSAPI Server::Write(mdk_client *client, void *data, int size)
+void GPMSAPI Server::Write(mdk_client client, void *data, int size)
 {
 	uv_write_t *req = (uv_write_t*)malloc(sizeof(uv_write_t));
 	uv_buf_t buf;
@@ -157,22 +163,22 @@ void GPMSAPI Server::Write(mdk_client *client, void *data, int size)
 	uv_write(req, (uv_stream_t*)client, &buf, 1, _OnWrite);
 }
 
-void GPMSAPI Server::Write(mdk_client *client, std::string str)
+void GPMSAPI Server::Write(mdk_client client, std::string str)
 {
 	Write(client, (void*)str.c_str(), str.length());
 }
 
-void GPMSAPI Server::Write(mdk_client *client, const char* data)
+void GPMSAPI Server::Write(mdk_client client, const char* data)
 {
 	Write(client, (void*)data, strlen(data));
 }
 
-void GPMSAPI Server::Close(mdk_client *client)
+void GPMSAPI Server::Close(mdk_client client)
 {
 	uv_close((uv_handle_t*)client, _OnClose);
 }
 
-int GPMSAPI Server::GetIPFromStream(mdk_client *client)
+int GPMSAPI Server::GetIPFromStream(mdk_client client)
 {
 	struct sockaddr_in clientaddr;
 	socklen_t clientaddr_len;
@@ -198,8 +204,8 @@ void GPMSAPI Server::Run()
 }
 
 // Pure virtual functions
-void GPMSAPI Server::OnRead(mdk_client*, const char *, ssize_t) {}
-bool GPMSAPI Server::OnNewConnection(mdk_client*) { return true; }
+void GPMSAPI Server::OnRead(mdk_client, const char *, ssize_t) {}
+bool GPMSAPI Server::OnNewConnection(mdk_client) { return true; }
 
 // UV Callbacks
 void _OnClose(uv_handle_t* handle)
@@ -278,7 +284,7 @@ void _OnRead(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf)
 	}
 
 	data = (ClientData*)stream->data;
-	data->GetInstance()->OnRead((mdk_client*)stream, buf->base, nread);
+	data->GetInstance()->OnRead((mdk_client)stream, buf->base, nread);
 	
 	if (buf->base)
 		free(buf->base);
@@ -309,7 +315,7 @@ void _OnTCPNewConnection(uv_stream_t *server, int status)
 
 	client->data = (void*)new ClientData(data->instance, false);
 	
-	if (!data->instance->OnNewConnection((mdk_client*)client))
+	if (!data->instance->OnNewConnection((mdk_client)client))
 	{
 		uv_close((uv_handle_t*)client, _OnClose);
 		return;
@@ -359,7 +365,7 @@ void _OnUDPNewConnection(uv_stream_t *server, int status)
 		uv_close((uv_handle_t*)client, _OnClose);
 }
 
-GPMSAPI ClientData* Server::GetData(mdk_client* client)
+GPMSAPI ClientData* Server::GetData(mdk_client client)
 {
 	uv_stream_t* stream = (uv_stream_t*)client;
 	

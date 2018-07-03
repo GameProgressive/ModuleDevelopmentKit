@@ -28,7 +28,7 @@ class ClientData;
 
 typedef struct SServerData
 {
-	mdk_loop *loop;
+	mdk_loop loop;
 	Server *instance;
 } TServerData;
 
@@ -60,7 +60,7 @@ public:
 			data => the data to write
 			size => size of the data to write
 	*/
-	static void GPMSAPI Write(mdk_client *client, void *data, int size);
+	static void GPMSAPI Write(mdk_client client, void *data, int size);
 
 	/*
 		Function: Write
@@ -69,7 +69,7 @@ public:
 			client => the client
 			data => the data to write
 	*/
-	static void GPMSAPI Write(mdk_client *client, const char *data);
+	static void GPMSAPI Write(mdk_client client, const char *data);
 
 	/*
 		Function: Write
@@ -78,7 +78,7 @@ public:
 			client => the client
 			data => the string that will be written
 	*/
-	static void GPMSAPI Write(mdk_client *client, std::string data);
+	static void GPMSAPI Write(mdk_client client, std::string data);
 
 	/*
 		Function: OnRead
@@ -90,7 +90,7 @@ public:
 			size => the size of the data
 		NOTE: This function must be overwritten by an implementation of the Server
 	*/
-	virtual void GPMSAPI OnRead(mdk_client* client, const char *data, ssize_t size) = 0;
+	virtual void GPMSAPI OnRead(mdk_client client, const char *data, ssize_t size) = 0;
 
 	/*
 		Function: OnNewConnection
@@ -99,7 +99,7 @@ public:
 			client => the client that is connected
 		NOTE: This function must be overwritten by an implementation of the Server
 	*/
-	virtual bool GPMSAPI OnNewConnection(mdk_client* client) = 0;
+	virtual bool GPMSAPI OnNewConnection(mdk_client client) = 0;
 
 	/*
 		Function: Close
@@ -107,7 +107,7 @@ public:
 		Parameters:
 			client => the client
 	*/
-	void GPMSAPI Close(mdk_client *client);
+	void GPMSAPI Close(mdk_client client);
 
 	/*
 		Function: GetIPFromStream
@@ -115,13 +115,13 @@ public:
 		Parameters:
 			client => the client to get the ip
 	*/
-	static int GPMSAPI GetIPFromStream(mdk_client *client);
+	static int GPMSAPI GetIPFromStream(mdk_client client);
 	
 	/*
 		Function: GetData
 		Description: Get passed data to a socket
 	*/
-	static GPMSAPI ClientData* GetData(mdk_client* client);
+	static GPMSAPI ClientData* GetData(mdk_client client);
 	
 	/*
 		Function: Run
@@ -129,7 +129,7 @@ public:
 	*/
 	void GPMSAPI Run();
 private:
-	mdk_loop* m_loop;
+	mdk_loop m_loop;
 
 	mdk_tcp m_tcp;
 	mdk_udp m_udp;

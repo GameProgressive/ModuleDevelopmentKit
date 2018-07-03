@@ -17,7 +17,7 @@
 	under the License.
 */
 #define GPMS_EXPORT 1 /*Export the methods*/
-#include "MasterServerMDK.h"
+#include <MDK/MasterServerMDK.h>
 
 #include <stdarg.h>
 

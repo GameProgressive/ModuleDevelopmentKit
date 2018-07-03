@@ -17,7 +17,7 @@
 	under the License.
 */
 #define GPMS_EXPORT 1 /*Export the methods*/
-#include "MasterServerMDK.h"
+#include <MDK/MasterServerMDK.h>
 
 #include <mysql.h> /*Still using MariaDB Connector C*/
 #include <stdio.h>
@@ -39,7 +39,7 @@ GPMSAPI ResultSet::~ResultSet()
 	m_rows.clear();
 }
 
-GPMSAPI bool ResultSet::executeQuery(mdk_mysql* con, std::string str)
+GPMSAPI bool ResultSet::executeQuery(mdk_mysql con, std::string str)
 {
 	MYSQL_RES *result = NULL;
 	MYSQL_ROW row;

@@ -29,7 +29,7 @@ public:
 GPMSAPI ResultSet();
 GPMSAPI ~ResultSet();
 
-GPMSAPI bool executeQuery(mdk_mysql* conn, std::string str);
+GPMSAPI bool executeQuery(mdk_mysql conn, std::string str);
 
 GPMSAPI bool first();
 GPMSAPI unsigned int getUInt(size_t index);

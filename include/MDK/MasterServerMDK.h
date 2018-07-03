@@ -68,7 +68,7 @@ typedef struct SModuleMain
 	char *ip;
 	int port;
 	ModuleConfigMap cfg;
-	mdk_mysql* mysql;
+	mdk_mysql mysql;
 } ModuleMain;
 
 enum ErrorCodes
