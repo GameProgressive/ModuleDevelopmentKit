@@ -48,13 +48,8 @@ GPMSAPI bool Database::Connect(mdk_mysql mysql, const char* socket, const char *
 
 GPMSAPI void Database::Disconnect(mdk_mysql mysql)
 {
-	MYSQL* realmysql = (MYSQL*)mysql;
-
-	if (realmysql)
-		mysql_close(realmysql);
-	
-	realmysql = NULL;
-	mysql = NULL;
+	if (mysql)
+		mysql_close((MYSQL*)mysql);
 }
 
 
@@ -98,9 +93,13 @@ GPMSAPI bool Database::RunDBQuery(mdk_mysql con, std::string str)
 
 GPMSAPI void Database::Init(mdk_mysql* mysql)
 {
-	MYSQL* realmysql = NULL;
-	mysql_init(realmysql);
-	*mysql = (mdk_mysql)realmysql;
+	MYSQL* realmysql = NULL, *realmysql2 = NULL;
+	realmysql2 = mysql_init(realmysql);
+
+	if (!realmysql)
+		*mysql = (mdk_mysql)realmysql2;
+	else
+		*mysql = (mdk_mysql)realmysql;
 }
 
 GPMSAPI bool Database::RunDBQuery(mdk_mysql con, std::string query, ResultSet **rs)
