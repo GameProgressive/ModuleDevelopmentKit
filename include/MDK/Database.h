@@ -67,7 +67,7 @@ public:
 	Parameters:
 		mysql => the connection to be initialized	
 	*/
-	GPMSAPI static void Init(mdk_mysql mysql);
+	GPMSAPI static void Init(mdk_mysql* mysql);
 	
 	/**
 	Function: RunDBQuery
