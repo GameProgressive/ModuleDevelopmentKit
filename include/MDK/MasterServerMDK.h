@@ -78,8 +78,11 @@ enum ErrorCodes
 	ERROR_MYSQL_POINTER,
 	ERROR_BIND_ERROR,
 	
-	/* RESERVED FOR WINDOWS */
+	/* Reserved for Windows */
 	ERROR_STILL_ALIVE = 259,
+
+	/* Reserved for Linux */
+	ERROR_LINUX_UNSUPPORTED_RESERVED = 260,
 };
 
 #endif
