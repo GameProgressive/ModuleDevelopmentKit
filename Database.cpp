@@ -24,6 +24,9 @@
 
 bool _InternalConnect(MYSQL* mysql, const char *username, const char *password, const char *dbname, const char *host, int port, const char *socket)
 {
+	if (!mysql)
+		return false;
+
 	if (!mysql_real_connect(mysql, host, username, password, dbname, port, socket, 0))
 	{
 		LOG_ERROR("Database", "Cannot connect to MySQL Server. Error: %s\n", mysql_error(mysql));
@@ -57,6 +60,9 @@ GPMSAPI void Database::Disconnect(mdk_mysql mysql)
 
 GPMSAPI std::string Database::EscapeSQLString(mdk_mysql con, std::string str)
 {
+	if (!con)
+		return false;
+
 	char *x = (char*)malloc(sizeof(char)*(str.length()*2+5));
 	if (!x)
 		return "";
@@ -70,11 +76,17 @@ GPMSAPI std::string Database::EscapeSQLString(mdk_mysql con, std::string str)
 
 GPMSAPI void Database::EscapeSQLString(mdk_mysql c, std::string &str)
 {
+	if (!c)
+		return;
+
 	str = EscapeSQLString(c, str.c_str());
 }
 
 GPMSAPI bool Database::RunDBQuery(mdk_mysql con, std::string str)
 {
+	if (!con)
+		return false;
+
 	if (mysql_query((MYSQL*)con, str.c_str()) != 0)
 	{
 		LOG_ERROR("Database", "Cannot execute query. Error: %s\n", mysql_error((MYSQL*)con));
@@ -93,6 +105,9 @@ GPMSAPI void Database::Init(mdk_mysql* mysql)
 
 GPMSAPI bool Database::RunDBQuery(mdk_mysql con, std::string query, ResultSet **rs)
 {
+	if (!con)
+		return false;
+
 	*rs = new ResultSet();
 	if (!(*rs)->executeQuery(con, query))
 	{
@@ -107,6 +122,9 @@ GPMSAPI bool Database::RunDBQuery(mdk_mysql con, std::string query, ResultSet **
 
 GPMSAPI bool Database::IsConnected(mdk_mysql con)
 {
+	if (!con)
+		return false;
+
 	if (mysql_stat((MYSQL*)con) == NULL)
 		return false;
 	
