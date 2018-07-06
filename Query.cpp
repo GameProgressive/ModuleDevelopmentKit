@@ -88,7 +88,7 @@ GPMSAPI bool ResultSet::executeQuery(mdk_mysql con, std::string str)
 			vec.push_back(row[i]);
 		
 		m_rows.push_back(vec);
-	} while (row++);
+	} while ((row = mysql_fetch_row(result)));
 	
 	mysql_free_result(result);
 	
