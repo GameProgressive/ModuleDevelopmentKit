@@ -27,5 +27,6 @@ bool GPMSAPI strendswith(const char *buffer, const char *what);
 bool GPMSAPI strdelete(char *buffer, int buffersize, int number);
 void GPMSAPI strrnd(char *buffer, int buffersize, const char *table);
 bool GPMSAPI strfind(char *buffer, const char what);
+bool GPMSAPI strstartswith(const char *buffer, const char *what);
 
 #endif

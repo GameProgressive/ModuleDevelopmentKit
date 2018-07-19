@@ -90,3 +90,31 @@ bool GPMSAPI strfind(char *buffer, const char what)
 
 	return false;
 }
+
+bool GPMSAPI strstartswith(const char* buffer, const char* what)
+{
+	unsigned int whatsize = strlen(what), count = 0;
+	char *checkbuf = (char *)malloc(sizeof(char) * (whatsize + 1));
+
+	if (whatsize > strlen(buffer))
+		return false;
+	
+	for (; count < whatsize; count++)
+	{
+		checkbuf[count] = buffer[count];
+	}
+	checkbuf[count] = '\0';
+
+	if (strcmp(checkbuf, what) == 0)
+	{
+		if (checkbuf)
+			free(checkbuf);
+
+		return true;
+	}
+
+	if (checkbuf)
+		free(checkbuf);
+
+	return false;
+}
