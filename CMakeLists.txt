@@ -71,4 +71,4 @@ if (WIN32)
 endif()
 
 add_library(MDK SHARED ${SOURCES})
-target_link_libraries(MDK uv libmariadb)
+target_link_libraries(MDK uv_a libmariadb)
