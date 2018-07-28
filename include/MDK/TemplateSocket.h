@@ -71,6 +71,10 @@ public:
 	inline void MDKDLLAPI Write(const char* data) { Write(m_socket, data); }
 	
 	inline void MDKDLLAPI Close() { Close(m_socket); }
+
+	MDKDLLAPI static void  SetSocketExtraData(mdk_socket socket, void* data);
+	MDKDLLAPI static void*  GetSocketExtraData(mdk_socket socket);
+
 protected:
 	ESocketType m_sockType;
 	mdk_loop m_loop;

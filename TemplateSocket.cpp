@@ -105,6 +105,18 @@ int MDKDLLAPI CTemplateSocket::GetIPFromSocket(mdk_socket socket)
 	return clientaddr.sin_addr.s_addr;
 }
 
+MDKDLLAPI void CTemplateSocket::SetSocketExtraData(mdk_socket socket, void* data)
+{
+	uv_stream_t* real_socket = (uv_stream_t*)socket;
+	real_socket->data = data;
+}
+
+MDKDLLAPI void* CTemplateSocket::GetSocketExtraData(mdk_socket socket)
+{
+	uv_stream_t* real_socket = (uv_stream_t*)socket;
+	return real_socket->data;
+}
+
 /* Virtual functions */
 MDKDLLAPI void CTemplateSocket::OnRead(mdk_socket, const char *, ssize_t) {}
 MDKDLLAPI bool CTemplateSocket::OnNewConnection(mdk_socket, int) { return true; }
