@@ -39,6 +39,7 @@ MDKDLLAPI CDatabase::CDatabase()
 #elif defined(__SQLITE__)
 	m_eDatabasetype = DATABASE_TYPE_SQLITE;
 #endif
+	m_Pointed_db = NULL;
 }
 
 MDKDLLAPI CDatabase::~CDatabase()
@@ -94,6 +95,7 @@ MDKDLLAPI void CDatabase::Disconnect()
 	if ((m_Pointed_db) && m_eDatabasetype == DATABASE_TYPE_SQLITE)
 		sqlite3_close((sqlite3*)m_Pointed_db);
 #endif
+	m_Pointed_db = NULL;
 }
 
 MDKDLLAPI bool CDatabase::IsConnected()
