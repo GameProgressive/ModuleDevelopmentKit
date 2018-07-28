@@ -16,107 +16,61 @@
 	specific language governing permissions and limitations
 	under the License.
 */
-#ifndef _GAMEPROGRESSIVE_MDK_DATABASE_H
-#define _GAMEPROGRESSIVE_MDK_DATABASE_H
+#ifndef _MODULEDEVELOPMENTKIT_DATABASE_H_
+#define _MODULEDEVELOPMENTKIT_DATABASE_H_
 
-#ifndef _GAMEPROGRESSIVE_MASTERSERVER_MDK_H_
-	#error "Please include <MasterServerMDK.h> not this file!"
-#endif
+#include "MDK_Definitions.h"
 
-class Database
+enum EDatabaseType
+{
+	DATABASE_TYPE_MARIADB = 0,
+	DATABASE_TYPE_SQLITE = 1,
+};
+
+typedef void* mdk_database;
+
+class CDatabase
 {
 public:
+	MDKDLLAPI CDatabase();
+	MDKDLLAPI ~CDatabase();
+
 	/**
 	Function: Connect
-	Description: Connec to a MySQL connection
+	Description: Connect to a database
 	Parameters:
-		mysql => the connection to be started
 		host => the host to be used to connect
 		port => the port to be used to connect
 		username => username used to login
 		dbname => database name used to login
 		password => password to be used (leave NULL for no password)
 	Return: true if the connection succeded, otherwise false
+	
+	NOTE: If port is lesser than 1, the host parametra will be considerated as UNIX Socket
 	*/
-	GPMSAPI static bool Connect(mdk_mysql mysql, const char *host, int port, const char *username, const char *dbname, const char *password = NULL);
-
-	/**
-	Function: Connect
-	Description: Connec to a MySQL connection
-	Parameters:
-		mysql => the connection to be started
-		socket => the socket to be used for connect
-		username => username used to login
-		dbname => database name used to login
-		password => password to be used (leave NULL for no password)
-	Return: true if the connection succeded, otherwise false
-	*/
-	GPMSAPI static bool Connect(mdk_mysql mysql, const char* socket, const char *username, const char *dbname, const char* password = NULL);
+	bool MDKDLLAPI Connect(EDatabaseType type, const char *host, int port, const char *username, const char *database_name, const char *password);
 	
 	/**
 	Function: Disconnect
-	Description: Disconnect a MySQL connection
-	Parameters:
-		mysql => the connection to be disconnected	
-	*/
-	GPMSAPI static void Disconnect(mdk_mysql mysql);
-	
-	/**
-	Function: Init
-	Description: Initialize a MySQL connection
-	Parameters:
-		mysql => the connection to be initialized	
-	*/
-	GPMSAPI static void Init(mdk_mysql* mysql);
-	
-	/**
-	Function: RunDBQuery
-	Description: Executes a generic query
-	Parameters:
-		mysql => the connection to be executed the query
-		str => the query
-	Return: true if the query was successfully executed, otherwise false
-	*/
-	GPMSAPI static bool RunDBQuery(mdk_mysql mysql, std::string str);
-
-	/**
-	Function: RunDBQuery
-	Description: Executes a generic query and store it's result to the passed result res
-	Parameters:
-		mysql => the connection to be executed the query
-		str => the query
-		rs => the result set to be filled
-	Return: true if the query was successfully executed, otherwise false
-	*/
-	GPMSAPI static bool RunDBQuery(mdk_mysql mysql, std::string str, ResultSet **rs);
-
-	/**
-	Function: EscapeSQLString
-	Description: Add escapes from a standard string
-	Parameters:
-		con => The connection to be used to perform the escaping
-		str => The string to be escaped
-	Return: Escaped string
-	*/
-	GPMSAPI static std::string EscapeSQLString(mdk_mysql con, std::string str);
-
-	/**
-	Function: EscapeSQLString
-	Description: Modify the passed string by adding escapes
-	Parameters:
-		con => The connection to be used to perform the escaping
-		str => The string to be escaped
-	*/
-	GPMSAPI static void EscapeSQLString(mdk_mysql con, std::string &str);
+	Description: Disconnects from the database
+	*/	
+	void MDKDLLAPI Disconnect();
 	
 	/**
 	Function: IsConnected
 	Description: Check if a connection is still alive
-	Parameters:
-		con => The connection to be checked
 	Return: true if it's connected, otherwise false
 	*/
-	GPMSAPI static bool IsConnected(mdk_mysql con);
+	bool MDKDLLAPI IsConnected();
+
+	inline MDKDLLAPI EDatabaseType GetDatabaseType() { return m_eDatabasetype; }
+	inline MDKDLLAPI mdk_database GetDatabasePointer() { return m_Pointed_db; }
+
+private:
+	mdk_database m_Pointed_db;
+	//Instantiation of mdk_database_pointer
+	EDatabaseType m_eDatabasetype;
+	//Instantiation of EDatabaseType
 };
 
 #endif

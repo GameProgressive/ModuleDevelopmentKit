@@ -16,34 +16,50 @@
 	specific language governing permissions and limitations
 	under the License.
 */
-#ifndef _GAMEPROGRESSIVE_MASTERSERVER_QUERY_H_
-#define _GAMEPROGRESSIVE_MASTERSERVER_QUERY_H_
+#ifndef _MODULEDEVELOPMENTKIT_QUERY_H_
+#define _MODULEDEVELOPMENTKIT_QUERY_H_
 
-#ifndef _GAMEPROGRESSIVE_MASTERSERVER_MDK_H_
-	#error "Please include <MasterServerMDK.h> not this file!"
-#endif
+#include "Database.h"
 
-class ResultSet
+#include <vector>
+
+/**
+	This class rappresents the result data of a SELECT or COUNT query.
+
+	1) Execute the query with your database pointer
+	2) Go to the first line and start parsing the data
+
+	You can use Get*FromRow() to get the data the row you selected
+	The index is the colum number of your query.
+
+	Make sure to match each value type with each coulmn.
+	(Don't try to read a int from a string data)
+*/
+class CResultSet
 {
 public:
-GPMSAPI ResultSet();
-GPMSAPI ~ResultSet();
+	MDKDLLAPI CResultSet();
+	MDKDLLAPI ~CResultSet();
 
-GPMSAPI bool executeQuery(mdk_mysql conn, std::string str);
+	MDKDLLAPI bool ExecuteQuery(CDatabase* db, std::string str);
 
-GPMSAPI bool first();
-GPMSAPI unsigned int getUInt(size_t index);
-GPMSAPI std::string getString(size_t index);
-GPMSAPI int getInt(size_t index);
-GPMSAPI double getDouble(size_t index);
+	MDKDLLAPI unsigned int GetUIntFromRow(size_t index);
+	MDKDLLAPI std::string GetStringFromRow(size_t index);
+	MDKDLLAPI int GetIntFromRow(size_t index);
+	MDKDLLAPI double GetDoubleFromRow(size_t index);
 
-GPMSAPI size_t getRows();
+	MDKDLLAPI size_t GetTotalRows();
 
-GPMSAPI bool next();
+	MDKDLLAPI bool GotoFirstRow();
+	MDKDLLAPI bool GotoNextRow();
+	MDKDLLAPI bool GotoRow(size_t row);
 
 private:
-	std::vector<std::vector<std::string>> m_rows;
-	size_t m_pos;
+	std::vector<std::vector<std::string>> m_vvRows;
+	size_t m_uiPos;
 };
+
+bool MDKDLLAPI mdk_only_run_query(CDatabase* db, std::string query);
+bool MDKDLLAPI mdk_escape_query_string(CDatabase* db, std::string& escapeString);
 
 #endif

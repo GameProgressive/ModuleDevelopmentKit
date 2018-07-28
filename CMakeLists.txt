@@ -16,7 +16,10 @@
 #	under the License.
 #
 cmake_minimum_required(VERSION 3.0)
-project("MasterServerMDK")
+project("ModuleDevelopmentKit")
+
+option(WITH_SQLITE "Enable SQLite support" ON)
+option(WITH_MARIADB "Enable MariaDB support" ON)
 
 # Add definitions for w32 build that dosen't support _WIN32 macro
 if (WIN32)
@@ -38,28 +41,40 @@ add_subdirectory(libuv)
 include_directories("libuv/include")
 
 # Main MDK inclusions
-include_directories("include")
+include_directories("include/MDK")
 
+# SQLite inclusion
+if (WITH_SQLITE)  ##*************************************************8
+	add_subdirectory(sqlite3)
+	add_definitions(-D__SQLITE__)
+	include_directories(sqlite3)
+endif()
 
 # Mariadb inclusion
-set(WITH_UNIT_TESTS OFF) # Remove useless tests from mariadb build
-add_subdirectory(mariadb-connector-c)
-include_directories("mariadb-connector-c/include")
-include_directories("${CMAKE_CURRENT_BINARY_DIR}/mariadb-connector-c/include") # mariadb config
+if (WITH_MARIADB)
+	set(WITH_UNIT_TESTS OFF) # Remove useless tests from mariadb build
+	add_subdirectory(mariadb-connector-c)
+	include_directories("mariadb-connector-c/include")
+	include_directories("${CMAKE_CURRENT_BINARY_DIR}/mariadb-connector-c/include") # mariadb config
+	add_definitions(-D__MARIADB__)
+endif()
 
 set(SOURCES
-	${CMAKE_CURRENT_LIST_DIR}/include/MDK/MasterServerMDK.h
-	${CMAKE_CURRENT_LIST_DIR}/Query.cpp
-	${CMAKE_CURRENT_LIST_DIR}/include/MDK/Query.h
-	${CMAKE_CURRENT_LIST_DIR}/MSString.cpp
-	${CMAKE_CURRENT_LIST_DIR}/include/MDK/MSString.h
-	${CMAKE_CURRENT_LIST_DIR}/Server.cpp
-	${CMAKE_CURRENT_LIST_DIR}/include/MDK/Server.h
-	${CMAKE_CURRENT_LIST_DIR}/include/MDK/msstdint.h
-	${CMAKE_CURRENT_LIST_DIR}/include/MDK/Log.h
-	${CMAKE_CURRENT_LIST_DIR}/Log.cpp
-	${CMAKE_CURRENT_LIST_DIR}/Database.cpp
 	${CMAKE_CURRENT_LIST_DIR}/include/MDK/Database.h
+	${CMAKE_CURRENT_LIST_DIR}/include/MDK/MDK_Definitions.h
+	${CMAKE_CURRENT_LIST_DIR}/include/MDK/mdkstdint.h
+	${CMAKE_CURRENT_LIST_DIR}/include/MDK/ModuleEntryPoint.h
+	${CMAKE_CURRENT_LIST_DIR}/include/MDK/Utility.h
+	${CMAKE_CURRENT_LIST_DIR}/include/MDK/Query.h
+	${CMAKE_CURRENT_LIST_DIR}/include/MDK/TemplateClient.h
+	${CMAKE_CURRENT_LIST_DIR}/include/MDK/TemplateServer.h
+	${CMAKE_CURRENT_LIST_DIR}/include/MDK/TemplateSocket.h
+	${CMAKE_CURRENT_LIST_DIR}/Database.cpp
+	${CMAKE_CURRENT_LIST_DIR}/Utility.cpp
+	${CMAKE_CURRENT_LIST_DIR}/Query.cpp
+	${CMAKE_CURRENT_LIST_DIR}/TemplateClient.cpp
+	${CMAKE_CURRENT_LIST_DIR}/TemplateServer.cpp
+	${CMAKE_CURRENT_LIST_DIR}/TemplateSocket.cpp
 )
 
 if (WIN32)
@@ -72,3 +87,10 @@ endif()
 
 add_library(MDK SHARED ${SOURCES})
 target_link_libraries(MDK uv_a libmariadb)
+
+if (WITH_MARIADB)
+	target_link_libraries(MDK libmariadb)
+endif()
+if (WITH_SQLITE)
+	target_link_libraries(MDK sqlite3)   ##********************************
+endif()

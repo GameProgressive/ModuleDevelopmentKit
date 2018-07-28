@@ -16,145 +16,206 @@
 	specific language governing permissions and limitations
 	under the License.
 */
-#define GPMS_EXPORT 1 /*Export the methods*/
-#include <MDK/MasterServerMDK.h>
+#define MDK_EXPORT_FUNCTIONS 1 /*Export the methods*/
+#include "Query.h"
+
+#include "Utility.h"
 
 #include <mysql.h> /*Still using MariaDB Connector C*/
 #include <stdio.h>
 
-GPMSAPI ResultSet::ResultSet()
+MDKDLLAPI CResultSet::CResultSet()
 {
-	m_pos = 0;
+	m_uiPos = 0;
 }
 
-GPMSAPI ResultSet::~ResultSet()
+MDKDLLAPI CResultSet::~CResultSet()
 {
 	size_t i = 0;
 	
-	for (; i < m_rows.size(); i++)
+	for (; i < m_vvRows.size(); i++)
 	{
-		m_rows.at(i).clear();
+		m_vvRows.at(i).clear();
 	}
 	
-	m_rows.clear();
+	m_vvRows.clear();
 }
 
-GPMSAPI bool ResultSet::executeQuery(mdk_mysql con, std::string str)
+MDKDLLAPI bool CResultSet::ExecuteQuery(CDatabase* db, std::string str)
 {
 	MYSQL_RES *result = NULL;
 	MYSQL_ROW row;
 	unsigned int fields = 0;
 	
-	if (mysql_query((MYSQL*)con, str.c_str()) != 0)
+#ifdef __MARIADB__
+	if (db->GetDatabaseType() == DATABASE_TYPE_MARIADB)
 	{
-		LOG_ERROR("Query", "Cannot execute query. Error: %s\n", mysql_error((MYSQL*)con));
-		return false;		
-	}
-	
-	result = mysql_store_result((MYSQL*)con);
-	if (!result)
-	{
-		LOG_ERROR("Query" "Cannot execute query. Error: %s\n", mysql_error((MYSQL*)con));
-		return false;				
-	}
-	
-	if (result->row_count == 0)
-	{
-		mysql_free_result(result);
-		return true;
-	}
-	
-	fields = mysql_num_fields(result);
-	if (fields == 0)
-	{
-		mysql_free_result(result);
-		return true;		
-	}
-	
-	row = mysql_fetch_row(result);
-	if (row == NULL)
-	{
-		mysql_free_result(result);
-		LOG_ERROR("Query", "Cannot execute query. Error: %s\n", mysql_error((MYSQL*)con));
-		return false;			
-	}
-	
-	do
-	{
-		std::vector<std::string> vec;
-		unsigned int i =  0;
+		if (mysql_query((MYSQL*)db, str.c_str()) != 0)
+		{
+			LOG_ERROR("Query", "Cannot execute query. Error: %s\n", mysql_error((MYSQL*)db));
+			return false;		
+		}
 		
-		for (; i < fields; i++)
-			vec.push_back(row[i]);
+		result = mysql_store_result((MYSQL*)db);
+		if (!result)
+		{
+			LOG_ERROR("Query" "Cannot execute query. Error: %s\n", mysql_error((MYSQL*)db));
+			return false;				
+		}
 		
-		m_rows.push_back(vec);
-	} while ((row = mysql_fetch_row(result)));
-	
-	mysql_free_result(result);
-	
+		if (result->row_count == 0)
+		{
+			mysql_free_result(result);
+			return true;
+		}
+		
+		fields = mysql_num_fields(result);
+		if (fields == 0)
+		{
+			mysql_free_result(result);
+			return true;		
+		}
+		
+		row = mysql_fetch_row(result);
+		if (row == NULL)
+		{
+			mysql_free_result(result);
+			LOG_ERROR("Query", "Cannot execute query. Error: %s\n", mysql_error((MYSQL*)db));
+			return false;
+		}
+		
+		do
+		{
+			std::vector<std::string> vec;
+			unsigned int i =  0;
+			
+			for (; i < fields; i++)
+				vec.push_back(row[i]);
+			
+			m_vvRows.push_back(vec);
+		} while ((row = mysql_fetch_row(result)));
+		
+		mysql_free_result(result);
+	}
+#endif
+
 	return true;
 }
 
-size_t ResultSet::getRows()
+MDKDLLAPI size_t CResultSet::GetTotalRows()
 {
-	return m_rows.size();
+	return m_vvRows.size();
 }
 
-bool ResultSet::first()
+MDKDLLAPI bool CResultSet::GotoFirstRow()
 {
-	if (m_rows.size() < 1)
+	if (m_vvRows.size() < 1)
 		return false;
 	
-	m_pos = 0;
+	m_uiPos = 0;
 	return true;
 }
 
-bool ResultSet::next()
+MDKDLLAPI bool CResultSet::GotoNextRow()
 {
-	m_pos++;
+	m_uiPos++;
 	
-	if (m_rows.size() < (m_pos+1))
-	{
-		m_pos = 0;
+	if (m_vvRows.size() < (m_uiPos+1))
 		return false;
-	}
 	
 	return true;
 }
 
-double ResultSet::getDouble(size_t index)
+MDKDLLAPI bool CResultSet::GotoRow(size_t row)
 {
-	if (m_rows.at(m_pos).size() < index)
+	m_uiPos = row;
+	
+	if (m_vvRows.size() < m_uiPos)
+		return false;
+	
+	return true;
+}
+
+MDKDLLAPI double CResultSet::GetDoubleFromRow(size_t index)
+{
+	if (m_vvRows.at(m_uiPos).size() < index)
 		return 0;
 	
-	return atof(m_rows.at(m_pos).at(index).c_str());
+	return atof(m_vvRows.at(m_uiPos).at(index).c_str());
 }
 
 unsigned int atoui(const char *x)
 {
-	return (unsigned int) strtol (x, (char **) NULL, 10);
+	return (unsigned int)strtol(x, (char **) NULL, 10);
 }
 
-GPMSAPI unsigned int ResultSet::getUInt(size_t index)
+MDKDLLAPI unsigned int CResultSet::GetUIntFromRow(size_t index)
 {
-	if (m_rows.at(m_pos).size() < index)
+	if (m_vvRows.at(m_uiPos).size() < index)
 		return 0;
 	
-	return atoui(m_rows.at(m_pos).at(index).c_str());
+	return atoui(m_vvRows.at(m_uiPos).at(index).c_str());
 }
 
-GPMSAPI std::string ResultSet::getString(size_t index)
+MDKDLLAPI std::string CResultSet::GetStringFromRow(size_t index)
 {
-	if (m_rows.at(m_pos).size() < index)
+	if (m_vvRows.at(m_uiPos).size() < index)
 		return 0;
 	
-	return m_rows.at(m_pos).at(index);
+	return m_vvRows.at(m_uiPos).at(index);
 }
 
-GPMSAPI int ResultSet::getInt(size_t index)
+MDKDLLAPI int CResultSet::GetIntFromRow(size_t index)
 {
-	if (m_rows.at(m_pos).size() < index)
+	if (m_vvRows.at(m_uiPos).size() < index)
 		return 0;
 	
-	return atoi(m_rows.at(m_pos).at(index).c_str());
+	return atoi(m_vvRows.at(m_uiPos).at(index).c_str());
 }
+
+bool MDKDLLAPI mdk_only_run_query(CDatabase* db, std::string query)
+{
+	 if (!db->GetDatabasePointer())
+		 return false;
+
+#ifdef __MARIADB__
+	 if (db->GetDatabaseType() == DATABASE_TYPE_MARIADB)
+	 {
+		 if (mysql_query((MYSQL*)db->GetDatabasePointer(), query.c_str()) != 0)
+		 {
+			 LOG_ERROR("Database", "Cannot execute query. Error: %s\n", mysql_error((MYSQL*)db->GetDatabasePointer()));
+			 return false;
+		 }
+	 }
+#endif
+#ifdef __SQLITE__
+	 if (db->GetDatabaseType() == DATABASE_TYPE_SQLITE)
+	 {
+			//*TODO!
+	 }
+#endif
+
+	 return true;
+}
+
+bool MDKDLLAPI mdk_escape_query_string(CDatabase* db, std::string& inputString)
+{
+#ifdef __MARIADB__
+	if (db->GetDatabaseType() == DATABASE_TYPE_MARIADB)
+	{
+		char *temporanyString = (char*)malloc(sizeof(char)*(inputString.length() * 2 + 5));
+		if (!temporanyString)
+			return false; // Out of memory, return null string
+
+		mysql_real_escape_string((MYSQL*)db->GetDatabasePointer(), temporanyString, inputString.c_str(), inputString.length());
+		inputString = std::string(temporanyString);
+
+		free(temporanyString);
+
+		return true;
+	}
+#endif
+
+	return true;	
+}
+

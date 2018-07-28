@@ -16,116 +16,101 @@
 	specific language governing permissions and limitations
 	under the License.
 */
-#define GPMS_EXPORT 1 /*Export the methods*/
-#include <MDK/MasterServerMDK.h>
+#define MDK_EXPORT_FUNCTIONS 1 /*Export the methods*/
+#include "Database.h"
 
-#include <stdio.h>
-#include <mysql.h>
+#include "Utility.h"
 
-bool _InternalConnect(MYSQL* mysql, const char *username, const char *password, const char *dbname, const char *host, int port, const char *socket)
+#ifdef __MARIADB__
+	#include <mysql.h>
+#endif
+#ifdef __SQLITE__
+	#include <sqlite3.h>
+#endif
+
+#if !defined(__MARIADB__) && !defined(__SQLITE__)
+	#error "Please change your configuration and choose at least one database engine!"
+#endif
+
+MDKDLLAPI CDatabase::CDatabase()
 {
-	if (!mysql)
-		return false;
+#ifdef __MARIADB__
+	m_eDatabasetype = DATABASE_TYPE_MARIADB;
+#elif defined(__SQLITE__)
+	m_eDatabasetype = DATABASE_TYPE_SQLITE;
+#endif
+}
 
-	if (!mysql_real_connect(mysql, host, username, password, dbname, port, socket, 0))
+MDKDLLAPI CDatabase::~CDatabase()
+{
+	Disconnect();
+}
+
+MDKDLLAPI bool CDatabase::Connect(EDatabaseType type, const char *host, int port, const char *username, const char *database_name, const char *password)
+{
+	m_eDatabasetype = type;
+	
+#ifdef __MARIADB__
+	if (m_eDatabasetype == DATABASE_TYPE_MARIADB)
 	{
-		LOG_ERROR("Database", "Cannot connect to MySQL Server. Error: %s\n", mysql_error(mysql));
-		return false;
+		if (!m_Pointed_db)
+		{
+			MYSQL* connection1 = NULL, *connection2 = NULL;
+			connection2 = mysql_init(connection1);
+			
+			if (!connection1)
+				m_Pointed_db = (mdk_database)connection2;
+			else
+				m_Pointed_db = (mdk_database)connection1;
+		}
+
+		if (!mysql_real_connect((MYSQL*)m_Pointed_db, port > 0 ? host : NULL, username, password, database_name, port, port > 0 ? NULL : host, 0))
+		{
+			LOG_ERROR("Database", "Cannot connect to Database Server. Error: %s\n", mysql_error((MYSQL*)m_Pointed_db));
+			return false;
+		}
 	}
+#endif
+#ifdef __SQLITE__
+	if (m_eDatabasetype == DATABASE_TYPE_SQLITE)
+	{
+		if (sqlite3_open_v2(database_name, (sqlite3**)&m_Pointed_db, SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE, NULL)) {
+			LOG_ERROR("Database", "Cannot open Database. Error: %s\n", sqlite3_errmsg((sqlite3*)m_Pointed_db));
+			return false;
+		}
+	}
+#endif
 
 	return true;
 }
 
-GPMSAPI bool Database::Connect(mdk_mysql mysql, const char *host, int port, const char *username, const char *dbname, const char *password)
+MDKDLLAPI void CDatabase::Disconnect()
 {
-	return _InternalConnect((MYSQL*)mysql, username, password, dbname, host, port, NULL);
+#ifdef __MARIADB__
+	if ((m_Pointed_db) && m_eDatabasetype == DATABASE_TYPE_MARIADB)
+		mysql_close((MYSQL*)m_Pointed_db);
+#endif
+#ifdef __SQLITE__
+	if ((m_Pointed_db) && m_eDatabasetype == DATABASE_TYPE_SQLITE)
+		sqlite3_close((sqlite3*)m_Pointed_db);
+#endif
 }
 
-GPMSAPI bool Database::Connect(mdk_mysql mysql, const char* socket, const char *username, const char *dbname, const char* password)
+MDKDLLAPI bool CDatabase::IsConnected()
 {
-	return _InternalConnect((MYSQL*)mysql, username, password, dbname, NULL, 0, socket);
-}
-
-GPMSAPI void Database::Disconnect(mdk_mysql mysql)
-{
-	if (mysql)
-		mysql_close((MYSQL*)mysql);
-}
-
-
-GPMSAPI std::string Database::EscapeSQLString(mdk_mysql con, std::string str)
-{
-	if (!con)
+	if (!m_Pointed_db)
 		return false;
 
-	char *x = (char*)malloc(sizeof(char)*(str.length()*2+5));
-	if (!x)
-		return "";
-	
-	mysql_real_escape_string((MYSQL*)con, x, str.c_str(), str.length());
-	std::string k = std::string(x);
-	
-	free(x);
-	return k;
-}
-
-GPMSAPI void Database::EscapeSQLString(mdk_mysql c, std::string &str)
-{
-	if (!c)
-		return;
-
-	str = EscapeSQLString(c, str.c_str());
-}
-
-GPMSAPI bool Database::RunDBQuery(mdk_mysql con, std::string str)
-{
-	if (!con)
-		return false;
-
-	if (mysql_query((MYSQL*)con, str.c_str()) != 0)
+#ifdef __MARIADB__
+	if (m_eDatabasetype == DATABASE_TYPE_MARIADB)
 	{
-		LOG_ERROR("Database", "Cannot execute query. Error: %s\n", mysql_error((MYSQL*)con));
-		return false;		
+		if (mysql_stat((MYSQL*)m_Pointed_db) == NULL)
+			return false;
 	}
-	
-	return true;
-}
+#endif
 
-GPMSAPI void Database::Init(mdk_mysql* mysql)
-{
-	MYSQL* realmysql = NULL, *realmysql2 = NULL;
-	realmysql2 = mysql_init(realmysql);
-
-	if (!realmysql)
-		*mysql = (mdk_mysql)realmysql2;
-	else
-		*mysql = (mdk_mysql)realmysql;
-}
-
-GPMSAPI bool Database::RunDBQuery(mdk_mysql con, std::string query, ResultSet **rs)
-{
-	if (!con)
-		return false;
-
-	*rs = new ResultSet();
-	if (!(*rs)->executeQuery(con, query))
-	{
-		delete rs;
-
-		LOG_ERROR("Database", "Cannot execute query. Error: %s\n",  mysql_error((MYSQL*)con));
-		return false;		
-	}
-
-	return true;
-}
-
-GPMSAPI bool Database::IsConnected(mdk_mysql con)
-{
-	if (!con)
-		return false;
-
-	if (mysql_stat((MYSQL*)con) == NULL)
-		return false;
+	// SQLite dosen't need this code because the database is always "connected" thanks to the nature
+	// of SQLite, the file is always opened until you close it
 	
 	return true;
 }
