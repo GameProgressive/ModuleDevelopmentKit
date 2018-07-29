@@ -211,8 +211,6 @@ bool MDKDLLAPI mdk_escape_query_string(CDatabase* db, std::string& inputString)
 		inputString = std::string(temporanyString);
 
 		free(temporanyString);
-
-		return true;
 	}
 #endif
 
