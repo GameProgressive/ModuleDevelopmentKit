@@ -71,14 +71,14 @@ void MDKDLLAPI CTemplateSocket::Write(mdk_socket socket, void *data, int size)
 	uv_write_t *req = (uv_write_t*)malloc(sizeof(uv_write_t));
 	uv_buf_t buf;
 	uv_stream_t* real_socket = (uv_stream_t*)socket;
-	CTemplateSocket* socket_ptr = NULL;
+	CClientData* client_data = NULL;
 	
 	if (!real_socket->data)
 		return;
-	
-	socket_ptr = (CTemplateSocket*)real_socket->data;
-	
-	if (socket_ptr->GetType() == SOCKET_TCP)
+
+	client_data = GetSocketExtraData(socket);
+
+	if (client_data->GetSocket()->GetType() == SOCKET_TCP)
 	{
 		buf.len = size;
 		buf.base = (char*)data;
@@ -117,16 +117,10 @@ int MDKDLLAPI CTemplateSocket::GetIPFromSocket(mdk_socket socket)
 	return clientaddr.sin_addr.s_addr;
 }
 
-MDKDLLAPI void CTemplateSocket::SetSocketExtraData(mdk_socket socket, void* data)
+MDKDLLAPI CClientData* CTemplateSocket::GetSocketExtraData(mdk_socket socket)
 {
 	uv_stream_t* real_socket = (uv_stream_t*)socket;
-	real_socket->data = data;
-}
-
-MDKDLLAPI void* CTemplateSocket::GetSocketExtraData(mdk_socket socket)
-{
-	uv_stream_t* real_socket = (uv_stream_t*)socket;
-	return real_socket->data;
+	return (CClientData*)real_socket->data;
 }
 
 /* Virtual functions */

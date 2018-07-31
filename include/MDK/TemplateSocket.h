@@ -21,6 +21,8 @@
 
 #include "MDK_Definitions.h"
 
+class CTemplateSocket;
+
 enum ESocketType
 {
 	SOCKET_TCP,
@@ -29,6 +31,26 @@ enum ESocketType
 
 typedef void* mdk_socket;
 typedef void* mdk_loop;
+
+class CClientData
+{
+public:
+	inline CClientData(CTemplateSocket* socket)
+	{
+		m_socket = socket;
+		m_data = NULL;
+	}
+
+	inline ~CClientData() {}
+
+	inline void SetData(void* data) { m_data = data; }
+	inline void* GetData() { return m_data; }
+
+	inline CTemplateSocket* GetSocket() { return m_socket; }
+protected:
+	CTemplateSocket* m_socket;
+	void* m_data;
+};
 
 /*
 	This class is a generic libUV socket
@@ -72,8 +94,7 @@ public:
 	
 	inline void MDKDLLAPI Close() { Close(m_socket); }
 
-	MDKDLLAPI static void  SetSocketExtraData(mdk_socket socket, void* data);
-	MDKDLLAPI static void*  GetSocketExtraData(mdk_socket socket);
+	MDKDLLAPI static CClientData* GetSocketExtraData(mdk_socket socket);
 
 protected:
 	ESocketType m_sockType;

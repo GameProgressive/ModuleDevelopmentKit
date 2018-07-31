@@ -41,7 +41,7 @@ bool MDKDLLAPI CTemplateServer::Bind(const char *ip, int port, bool udp)
 	struct sockaddr_in addr;
 	uv_udp_t* real_udp_socket = NULL;
 	uv_tcp_t* real_tcp_socket = NULL;
-	
+
 	// Initialize the socket
 	if (udp)
 	{
@@ -89,12 +89,12 @@ bool MDKDLLAPI CTemplateServer::Bind(const char *ip, int port, bool udp)
 	// Access the loop from the other functions
 	if (udp)
 	{
-		real_udp_socket->data = (void*)this;
+		real_udp_socket->data = (void*)new CClientData(this);
 		m_socket = (void*)real_udp_socket;
 	}
 	else
 	{
-		real_tcp_socket->data = (void*)this;
+		real_tcp_socket->data = (void*)new CClientData(this);
 		m_socket = (void*)real_tcp_socket;
 	}
 	
@@ -111,16 +111,17 @@ void libuv_callback_on_server_tcp_new_connection(uv_stream_t *server_socket, int
 {
 	//_t equals to structure in libuv code
 	uv_tcp_t* client_socket = NULL;
-	CTemplateServer* server_pointer = NULL;
+	CClientData* client_data = NULL;
 
 	if (status < 0 || server_socket->data == NULL)
 		return; // data is NULL, no pointer to the Template server or cannot accept the connection
 
-	server_pointer = (CTemplateServer*)server_socket->data;
-	
+
+	client_data = CTemplateSocket::GetSocketExtraData((mdk_socket)server_socket);
+
 	client_socket = (uv_tcp_t*)malloc(sizeof(uv_tcp_t));
 
-	uv_tcp_init((uv_loop_t*)server_pointer->GetLoop(), client_socket);
+	uv_tcp_init((uv_loop_t*)client_data->GetSocket()->GetLoop(), client_socket);
 
 	// Accept the client
 	status = uv_accept(server_socket, (uv_stream_t *)client_socket); 
@@ -132,7 +133,7 @@ void libuv_callback_on_server_tcp_new_connection(uv_stream_t *server_socket, int
 
 	client_socket->data = server_socket->data;
 	
-	if (!server_pointer->OnNewConnection((mdk_socket)client_socket, 0))
+	if (!client_data->GetSocket()->OnNewConnection((mdk_socket)client_socket, 0))
 	{
 		uv_close((uv_handle_t*)client_socket, libuv_callback_on_close);
 		return;
@@ -147,8 +148,6 @@ void libuv_callback_on_server_tcp_new_connection(uv_stream_t *server_socket, int
 
 void libuv_callback_on_server_tcp_read(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf)
 {
-	CTemplateSocket *socket_ptr = NULL;
-
 	if (nread < 0 || stream->data == NULL)
 	{
 		uv_close((uv_handle_t*)stream, libuv_callback_on_close);
@@ -166,8 +165,7 @@ void libuv_callback_on_server_tcp_read(uv_stream_t *stream, ssize_t nread, const
 		return;
 	}
 
-	socket_ptr = (CTemplateServer*)stream->data;
-	socket_ptr->OnRead((mdk_socket)stream, buf->base, nread);
+	CTemplateSocket::GetSocketExtraData((mdk_socket)stream)->GetSocket()->OnRead(stream, buf->base, nread);
 	
 	if (buf->base)
 		free(buf->base);

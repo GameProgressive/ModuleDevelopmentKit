@@ -39,7 +39,7 @@ void MDKDLLAPI CTemplateClient::ConnectTCP(const char*ip, int port)
 	uv_tcp_init((uv_loop_t*)m_loop, (uv_tcp_t*)m_socket);
 	uv_ip4_addr(ip, port, &addr);
 
-	((uv_tcp_t*)m_socket)->data = (void*)this;
+	((uv_tcp_t*)m_socket)->data = (void*)new CClientData(this);
 
 	uv_connect_t* req = (uv_connect_t*)malloc(sizeof(uv_connect_t));
 	uv_tcp_connect(req, (uv_tcp_t*)m_socket, (const sockaddr*)&addr, libuv_callback_on_client_tcp_connection);

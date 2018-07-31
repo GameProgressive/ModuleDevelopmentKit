@@ -50,16 +50,16 @@ MDKDLLAPI bool CResultSet::ExecuteQuery(CDatabase* db, std::string str)
 #ifdef __MARIADB__
 	if (db->GetDatabaseType() == DATABASE_TYPE_MARIADB)
 	{
-		if (mysql_query((MYSQL*)db, str.c_str()) != 0)
+		if (mysql_query((MYSQL*)db->GetDatabasePointer(), str.c_str()) != 0)
 		{
-			LOG_ERROR("Query", "Cannot execute query. Error: %s\n", mysql_error((MYSQL*)db));
+			LOG_ERROR("Query", "Cannot execute query. Error: %s\n", mysql_error((MYSQL*)db->GetDatabasePointer()));
 			return false;		
 		}
 		
-		result = mysql_store_result((MYSQL*)db);
+		result = mysql_store_result((MYSQL*)db->GetDatabasePointer());
 		if (!result)
 		{
-			LOG_ERROR("Query" "Cannot execute query. Error: %s\n", mysql_error((MYSQL*)db));
+			LOG_ERROR("Query" "Cannot execute query. Error: %s\n", mysql_error((MYSQL*)db->GetDatabasePointer()));
 			return false;				
 		}
 		
