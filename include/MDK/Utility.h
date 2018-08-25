@@ -29,13 +29,13 @@ bool MDKDLLAPI strfind(char *buffer, const char what);
 bool MDKDLLAPI strstartswith(const char *buffer, const char *what);
 
 // Display an information log
-#define LOG_INFO(name, fmt, ...) CmdLoginInfoDisplay(name, "INFO", fmt, __VA_ARGS__)
+#define LOG_INFO(name, fmt, ...) CmdLoginInfoDisplay(name, "INFO", fmt, ##__VA_ARGS__)
 
 // Display an error log
-#define LOG_ERROR(name, fmt, ...) CmdLoginInfoDisplay(name, "ERROR", fmt, __VA_ARGS__)
+#define LOG_ERROR(name, fmt, ...) CmdLoginInfoDisplay(name, "ERROR", fmt, ##__VA_ARGS__)
 
 // Display a warning log
-#define LOG_WARN(name, fmt, ...) CmdLoginInfoDisplay(name, "WARN", fmt, __VA_ARGS__)
+#define LOG_WARN(name, fmt, ...) CmdLoginInfoDisplay(name, "WARN", fmt, ##__VA_ARGS__)
 
 /*
 	This functions are use to display information on the console
