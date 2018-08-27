@@ -17,6 +17,8 @@ project("ModuleDevelopmentKit")
 option(WITH_SQLITE "Enable SQLite support" ON)
 option(WITH_MARIADB "Enable MariaDB support" ON)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ModuleDevelopmentKit_SOURCE_DIR}/cmake)
+
 # Add definitions for w32 build that dosen't support _WIN32 macro
 if (WIN32)
 	add_definitions("-DWIN32 -D__WIN32__")
@@ -32,9 +34,20 @@ endif()
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+# Find thread libraries and compiler flags if required.
+find_package(Threads)
+
 # LibUV inclusions
-add_subdirectory(libuv)
-include_directories("libuv/include")
+find_package(LibUV)
+
+if(NOT LIBUV_FOUND)
+	message("Failed to find libmariadb, will build bundled copy.")
+	add_subdirectory(libuv)
+	include_directories("libuv/include")
+	set(LIBUV_LIBRARIES uv_a)
+else()
+	include_directories(${LIBUV_INCLUDE_DIRS})
+endif()
 
 # Main MDK inclusions
 include_directories("include/MDK")
@@ -42,17 +55,23 @@ include_directories("include/MDK")
 # SQLite inclusion
 if (WITH_SQLITE)
 	add_subdirectory(sqlite3)
-	add_definitions(-D__SQLITE__)
 	include_directories(sqlite3)
 endif()
 
 # Mariadb inclusion
 if (WITH_MARIADB)
-	set(WITH_UNIT_TESTS OFF) # Remove useless tests from mariadb build
-	add_subdirectory(mariadb-connector-c)
-	include_directories("mariadb-connector-c/include")
-	include_directories("${CMAKE_CURRENT_BINARY_DIR}/mariadb-connector-c/include") # mariadb config
-	add_definitions(-D__MARIADB__)
+	find_package(MariaDB)
+
+	if(NOT MARIADB_FOUND)
+		message("Failed to find libmariadb, will build bundled copy.")
+		set(WITH_UNIT_TESTS OFF) # Remove useless tests from mariadb build
+		add_subdirectory(mariadb-connector-c)
+		include_directories("mariadb-connector-c/include")
+		include_directories("${CMAKE_CURRENT_BINARY_DIR}/mariadb-connector-c/include") # mariadb config
+		set(MARIADB_LIBRARIES libmariadb)
+	else()
+		include_directories(${MARIADB_INCLUDE_DIRS})
+	endif()
 endif()
 
 set(SOURCES
@@ -81,11 +100,12 @@ if (WIN32)
 	set_source_files_properties(${CMAKE_CURRENT_LIST_DIR}/Common.rc PROPERTIES LANGUAGE RC)
 endif()
 
-set(MDK_LIBRARIES uv_a)
+set(MDK_LIBRARIES ${MDK_LIBRARIES} ${LIBUV_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 
 if (WITH_MARIADB)
-	set(MDK_LIBRARIES ${MDK_LIBRARIES} libmariadb)
+	set(MDK_LIBRARIES ${MDK_LIBRARIES} ${MARIADB_LIBRARIES})
 endif()
+
 if (WITH_SQLITE)
 	set(MDK_LIBRARIES ${MDK_LIBRARIES} sqlite3)
 endif()
