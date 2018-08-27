@@ -1,19 +1,15 @@
-#	Licensed to the Apache Software Foundation (ASF) under one
-#	or more contributor license agreements.  See the NOTICE file
-#	distributed with this work for additional information
-#	regarding copyright ownership.  The ASF licenses this file
-#	to you under the Apache License, Version 2.0 (the
-#	"License"); you may not use this file except in compliance
-#	with the License.  You may obtain a copy of the License at
+#This program is free software: you can redistribute it and/or modify
+#it under the terms of the GNU Lesser General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
 #
-#	http://www.apache.org/licenses/LICENSE-2.0
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU Lesser General Public License for more details.
 #
-#	Unless required by applicable law or agreed to in writing,
-#	software distributed under the License is distributed on an
-#	"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-#	KIND, either express or implied.  See the License for the
-#	specific language governing permissions and limitations
-#	under the License.
+#You should have received a copy of the GNU Lesser General Public License
+#along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 cmake_minimum_required(VERSION 3.0)
 project("ModuleDevelopmentKit")
@@ -44,7 +40,7 @@ include_directories("libuv/include")
 include_directories("include/MDK")
 
 # SQLite inclusion
-if (WITH_SQLITE)  ##*************************************************8
+if (WITH_SQLITE)
 	add_subdirectory(sqlite3)
 	add_definitions(-D__SQLITE__)
 	include_directories(sqlite3)
@@ -85,12 +81,21 @@ if (WIN32)
 	set_source_files_properties(${CMAKE_CURRENT_LIST_DIR}/Common.rc PROPERTIES LANGUAGE RC)
 endif()
 
-add_library(MDK SHARED ${SOURCES})
-target_link_libraries(MDK uv_a libmariadb)
+set(MDK_LIBRARIES uv_a)
 
 if (WITH_MARIADB)
-	target_link_libraries(MDK libmariadb)
+	set(MDK_LIBRARIES ${MDK_LIBRARIES} libmariadb)
 endif()
 if (WITH_SQLITE)
-	target_link_libraries(MDK sqlite3)   ##********************************
+	set(MDK_LIBRARIES ${MDK_LIBRARIES} sqlite3)
+endif()
+
+add_library(MDK SHARED ${SOURCES})
+target_link_libraries(MDK ${MDK_LIBRARIES})
+
+if (WITH_MARIADB)
+	target_compile_definitions(MDK PUBLIC __MARIADB__=1)
+endif()
+if (WITH_SQLITE)
+	target_compile_definitions(MDK PUBLIC __SQLITE__=1)
 endif()
