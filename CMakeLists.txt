@@ -41,7 +41,7 @@ find_package(Threads)
 find_package(LibUV)
 
 if(NOT LIBUV_FOUND)
-	message("Failed to find libmariadb, will build bundled copy.")
+	message("Failed to find libuv, will build bundled copy.")
 	add_subdirectory(libuv)
 	include_directories("libuv/include")
 	set(LIBUV_LIBRARIES uv_a)
