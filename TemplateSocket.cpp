@@ -34,7 +34,7 @@ MDKDLLAPI CTemplateSocket::CTemplateSocket()
 	m_sockType = SOCKET_TCP;
 	m_socket = NULL;
 
-	uv_loop_t* real_loop = (uv_loop_t*)malloc(sizeof uv_loop_t);
+	uv_loop_t* real_loop = (uv_loop_t*)malloc(sizeof(uv_loop_t));
 	uv_loop_init(real_loop);
 	m_loop = (mdk_loop)real_loop;
 }

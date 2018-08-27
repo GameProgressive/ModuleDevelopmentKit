@@ -85,12 +85,21 @@ if (WIN32)
 	set_source_files_properties(${CMAKE_CURRENT_LIST_DIR}/Common.rc PROPERTIES LANGUAGE RC)
 endif()
 
-add_library(MDK SHARED ${SOURCES})
-target_link_libraries(MDK uv_a libmariadb)
+set(MDK_LIBRARIES uv_a)
 
 if (WITH_MARIADB)
-	target_link_libraries(MDK libmariadb)
+	set(MDK_LIBRARIES ${MDK_LIBRARIES} mariadbclient) # Linking dynamic appears to fail on ubuntu 18.04
 endif()
 if (WITH_SQLITE)
-	target_link_libraries(MDK sqlite3)   ##********************************
+	set(MDK_LIBRARIES ${MDK_LIBRARIES} sqlite3)
+endif()
+
+add_library(MDK SHARED ${SOURCES})
+target_link_libraries(MDK ${MDK_LIBRARIES})
+
+if (WITH_MARIADB)
+    target_compile_definitions(MDK PUBLIC __MARIADB__=1)
+endif()
+if (WITH_SQLITE)
+    target_compile_definitions(MDK PUBLIC __SQLITE__=1)
 endif()
