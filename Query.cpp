@@ -55,7 +55,7 @@ MDKDLLAPI bool CResultSet::ExecuteQuery(CDatabase* db, std::string str)
 		result = mysql_store_result((MYSQL*)db->GetDatabasePointer());
 		if (!result)
 		{
-			LOG_ERROR("Query" "Cannot execute query. Error: %s\n", mysql_error((MYSQL*)db->GetDatabasePointer()));
+			LOG_ERROR("Query", "Cannot execute query. Error: %s\n", mysql_error((MYSQL*)db->GetDatabasePointer()));
 			return false;				
 		}
 		

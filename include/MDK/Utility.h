@@ -24,6 +24,7 @@ void MDKDLLAPI strrand(char *buffer, int buffersize, const char *table);
 bool MDKDLLAPI strfind(char *buffer, const char what);
 bool MDKDLLAPI strstartswith(const char *buffer, const char *what);
 
+#ifdef _MSC_VER
 // Display an information log
 #define LOG_INFO(name, fmt, ...) CmdLoginInfoDisplay(name, "INFO", fmt, __VA_ARGS__)
 
@@ -32,6 +33,16 @@ bool MDKDLLAPI strstartswith(const char *buffer, const char *what);
 
 // Display a warning log
 #define LOG_WARN(name, fmt, ...) CmdLoginInfoDisplay(name, "WARN", fmt, __VA_ARGS__)
+#else
+// Display an information log
+#define LOG_INFO(name, fmt, ...) CmdLoginInfoDisplay(name, "INFO", fmt, ##__VA_ARGS__)
+
+// Display an error log
+#define LOG_ERROR(name, fmt, ...) CmdLoginInfoDisplay(name, "ERROR", fmt, ##__VA_ARGS__)
+
+// Display a warning log
+#define LOG_WARN(name, fmt, ...) CmdLoginInfoDisplay(name, "WARN", fmt, ##__VA_ARGS__)
+#endif
 
 /*
 	This functions are use to display information on the console

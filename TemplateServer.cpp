@@ -41,12 +41,12 @@ bool MDKDLLAPI CTemplateServer::Bind(const char *ip, int port, bool udp)
 	// Initialize the socket
 	if (udp)
 	{
-		real_udp_socket = (uv_udp_t*)malloc(sizeof uv_udp_t);
+		real_udp_socket = (uv_udp_t*)malloc(sizeof(uv_udp_t));
 		r = uv_udp_init((uv_loop_t*)m_loop, real_udp_socket);
 	}
 	else
 	{
-		real_tcp_socket = (uv_tcp_t*)malloc(sizeof uv_tcp_t);
+		real_tcp_socket = (uv_tcp_t*)malloc(sizeof(uv_tcp_t));
 		r = uv_tcp_init((uv_loop_t*)m_loop, real_tcp_socket);
 	}
 
