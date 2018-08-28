@@ -22,7 +22,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ModuleDevelopmentKit_SOURCE_DIR}/cm
 
 # Add definitions for w32 build that dosen't support _WIN32 macro
 if (WIN32)
-	add_definitions("-DWIN32 -D__WIN32__")
+	add_definitions("-DWIN32 -D__WIN32__ -D_CRT_SECURE_NO_WARNINGS")
 endif()
 
 # Set -fPIC to allow compiling mdk shared library with libuv
