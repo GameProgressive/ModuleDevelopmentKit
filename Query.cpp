@@ -17,8 +17,22 @@
 
 #include "Utility.h"
 
+#ifdef __MARIADB__
 #include <mysql.h> /*Still using MariaDB Connector C*/
+#endif
+#ifdef __SQLITE__
+#include <sqlite3.h>
+#endif
+
 #include <stdio.h>
+
+#ifdef __SQLITE__
+int _sqlite3_query_exec_callback(void* user, int, char**, char**)
+{
+	return 0;
+}
+#endif
+
 
 MDKDLLAPI CResultSet::CResultSet()
 {
@@ -92,6 +106,45 @@ MDKDLLAPI bool CResultSet::ExecuteQuery(CDatabase* db, std::string str)
 		} while ((row = mysql_fetch_row(result)));
 		
 		mysql_free_result(result);
+	}
+#endif
+#ifdef __SQLITE__
+	if (db->GetDatabaseType() == DATABASE_TYPE_SQLITE)
+	{
+		sqlite3_stmt* stmt = NULL;
+		
+		if (sqlite3_prepare_v2((sqlite3*)db->GetDatabasePointer(), str.c_str(), str.length(), &stmt, NULL) != SQLITE_OK)
+		{
+			LOG_ERROR("Query", "Cannot execute query. Error: %s\n", sqlite3_errmsg((sqlite3*)db->GetDatabasePointer()));
+			return false;
+		}
+		
+
+		fields = sqlite3_column_count(stmt);
+		if (fields < 0)
+		{
+			sqlite3_finalize(stmt);
+			return false;
+		}
+		
+		if (sqlite3_step(stmt) != SQLITE_ROW)
+		{ // No rows
+			sqlite3_finalize(stmt);
+			return false;
+		}
+		
+		do
+		{
+			std::vector<std::string> vec;
+			unsigned int i =  0;
+			
+			for (; i < fields; i++)
+				vec.push_back(std::string((const char*)sqlite3_column_text(stmt, i)));
+			
+			m_vvRows.push_back(vec);
+		} while (sqlite3_step(stmt) == SQLITE_ROW);
+		
+		sqlite3_finalize(stmt);
 	}
 #endif
 
@@ -171,27 +224,33 @@ MDKDLLAPI int CResultSet::GetIntFromRow(size_t index)
 
 bool MDKDLLAPI mdk_only_run_query(CDatabase* db, std::string query)
 {
-	 if (!db->GetDatabasePointer())
-		 return false;
+	if (!db->GetDatabasePointer())
+		return false;
 
 #ifdef __MARIADB__
-	 if (db->GetDatabaseType() == DATABASE_TYPE_MARIADB)
-	 {
-		 if (mysql_query((MYSQL*)db->GetDatabasePointer(), query.c_str()) != 0)
-		 {
-			 LOG_ERROR("Database", "Cannot execute query. Error: %s\n", mysql_error((MYSQL*)db->GetDatabasePointer()));
-			 return false;
-		 }
-	 }
+	if (db->GetDatabaseType() == DATABASE_TYPE_MARIADB)
+	{
+		if (mysql_query((MYSQL*)db->GetDatabasePointer(), query.c_str()) != 0)
+		{
+			LOG_ERROR("Database", "Cannot execute query. Error: %s\n", mysql_error((MYSQL*)db->GetDatabasePointer()));
+			return false;
+		}
+	}
 #endif
 #ifdef __SQLITE__
-	 if (db->GetDatabaseType() == DATABASE_TYPE_SQLITE)
-	 {
-			//*TODO!
-	 }
+	char *errMsg = NULL;
+	
+	if (db->GetDatabaseType() == DATABASE_TYPE_SQLITE)
+	{
+		if (sqlite3_exec((sqlite3*)db->GetDatabasePointer(), query.c_str(), _sqlite3_query_exec_callback, NULL, (char**)&errMsg)!=SQLITE_OK)
+		{
+			LOG_ERROR("Database", "Cannot execute query. Error: %s\n", errMsg);
+			return false;
+		}
+	}
 #endif
 
-	 return true;
+	return true;
 }
 
 bool MDKDLLAPI mdk_escape_query_string(CDatabase* db, std::string& inputString)

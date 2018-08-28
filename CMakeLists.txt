@@ -16,6 +16,7 @@ project("ModuleDevelopmentKit")
 
 option(WITH_SQLITE "Enable SQLite support" ON)
 option(WITH_MARIADB "Enable MariaDB support" ON)
+option(WITH_MYSQL "Enable MySQL rather than MariaDB" OFF)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ModuleDevelopmentKit_SOURCE_DIR}/cmake)
 
@@ -59,7 +60,7 @@ if (WITH_SQLITE)
 endif()
 
 # Mariadb inclusion
-if (WITH_MARIADB)
+if (WITH_MARIADB AND NOT WITH_MYSQL)
 	find_package(MariaDB)
 
 	if(NOT MARIADB_FOUND)
@@ -71,6 +72,16 @@ if (WITH_MARIADB)
 		set(MARIADB_LIBRARIES libmariadb)
 	else()
 		include_directories(${MARIADB_INCLUDE_DIRS})
+	endif()
+endif()
+
+if (WITH_MYSQL)
+	find_package(MySQL)
+
+	if (NOT MYSQL_FOUND)
+		message("Failed to find libmysql")
+	else()
+		include_directories(${MYSQL_INCLUDES})
 	endif()
 endif()
 
