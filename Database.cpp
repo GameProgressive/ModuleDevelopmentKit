@@ -36,6 +36,7 @@ MDKDLLAPI CDatabase::CDatabase()
 	m_eDatabasetype = DATABASE_TYPE_SQLITE;
 #endif
 	m_Pointed_db = NULL;
+	m_uiProtocol = 0;
 }
 
 MDKDLLAPI CDatabase::~CDatabase()
@@ -61,6 +62,13 @@ MDKDLLAPI bool CDatabase::Connect(EDatabaseType type, const char *host, int port
 				m_Pointed_db = (mdk_database)connection1;
 		}
 
+		if (port > 0)
+			m_uiProtocol = MYSQL_PROTOCOL_TCP;
+		else
+			m_uiProtocol = MYSQL_PROTOCOL_SOCKET;
+		
+		mysql_options((MYSQL*)m_Pointed_db, MYSQL_OPT_PROTOCOL, &m_uiProtocol);
+		
 		if (!mysql_real_connect((MYSQL*)m_Pointed_db, port > 0 ? host : NULL, username, password, database_name, port, port > 0 ? NULL : host, 0))
 		{
 			LOG_ERROR("Database", "Cannot connect to Database Server. Error: %s\n", mysql_error((MYSQL*)m_Pointed_db));

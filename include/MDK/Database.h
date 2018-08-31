@@ -67,6 +67,8 @@ private:
 	//Instantiation of mdk_database_pointer
 	EDatabaseType m_eDatabasetype;
 	//Instantiation of EDatabaseType
+	
+	unsigned int m_uiProtocol;
 };
 
 #endif
