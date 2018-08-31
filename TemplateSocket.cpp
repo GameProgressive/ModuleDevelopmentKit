@@ -19,6 +19,8 @@
 #include <uv.h>
 #include <stdlib.h>
 
+#include "Utility.h"
+
 /* Prototypes */
 int uv_udp_getpeername(const uv_udp_t* handle, struct sockaddr* name, int* namelen);
 void libuv_callback_allocate_buffer(uv_handle_t *handle, size_t size, uv_buf_t* buf);
@@ -76,6 +78,9 @@ void MDKDLLAPI CTemplateSocket::Write(mdk_socket socket, void *data, int size)
 
 	if (client_data->GetSocket()->GetType() == SOCKET_TCP)
 	{
+#ifdef _DEBUG
+		LOG_INFO("Socket", "TCP: Sending %s to client", (char*)data);
+#endif
 		buf.len = size;
 		buf.base = (char*)data;
 	

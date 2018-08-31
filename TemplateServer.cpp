@@ -148,23 +148,27 @@ void libuv_callback_on_server_tcp_read(uv_stream_t *stream, ssize_t nread, const
 	{
 		uv_close((uv_handle_t*)stream, libuv_callback_on_close);
 
-		if (buf->base)
-			free(buf->base);
+		//if (buf->base)
+		//	free(buf->base);
 
 		return;
 	}
 	else if (nread == 0)
 	{
-		if (buf->base)
-			free(buf->base);
+		//if (buf->base)
+		//	free(buf->base);
 
 		return;
 	}
 
+#ifdef _DEBUG
+	LOG_INFO("Server", "TCP: Received %s from client", buf->base);
+#endif
+
 	CTemplateSocket::GetSocketExtraData((mdk_socket)stream)->GetSocket()->OnRead(stream, buf->base, nread);
 	
-	if (buf->base)
-		free(buf->base);
+	//if (buf->base)
+	//	free(buf->base);
 }
 
 void libuv_callback_on_server_udp_new_connection(uv_udp_t* handle, ssize_t nread, const uv_buf_t* recv, const struct sockaddr* addr, unsigned int flags)
@@ -189,7 +193,7 @@ void libuv_callback_on_server_udp_new_connection(uv_udp_t* handle, ssize_t nread
 	int x = CTemplateServer::GetIPFromSocket(handle);
 	inet_ntop(AF_INET, &x, ipstr, sizeof(ipstr));
 	
-	LOG_INFO("Server", "%s %s %d", recv->base, ipstr, nread);
+	LOG_INFO("Server", "UDP Connect: %s %s %d", recv->base, ipstr, nread);
 	
 	free(recv->base);
 }
