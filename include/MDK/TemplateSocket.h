@@ -61,10 +61,11 @@ public:
 	inline ESocketType MDKDLLAPI GetType() { return m_sockType; }
 	
 	/* Virtual function called when something is readed */
-	virtual MDKDLLAPI void OnRead(mdk_socket, const char *, ssize_t) = 0;
+	virtual MDKDLLAPI void OnTCPRead(mdk_socket, const char *, ssize_t) = 0;
+	virtual MDKDLLAPI void OnUDPRead(mdk_socket, const struct sockaddr* addr, const char *, ssize_t) = 0;
 	
 	/* Virtual function called when a new connection happens */
-	virtual MDKDLLAPI bool OnNewConnection(mdk_socket, int) = 0;
+	virtual MDKDLLAPI bool OnTCPNewConnection(mdk_socket, int) = 0;
 	
 	/* TODO: How can i do multiple loops???? */
 	/* This function run the loop, but WTF is slow with this :X */
@@ -74,19 +75,27 @@ public:
 	static void MDKDLLAPI Close(mdk_socket socket);
 	
 	/* Write some data to the socket */
-	static void MDKDLLAPI Write(mdk_socket socket, std::string str);
-	static void MDKDLLAPI Write(mdk_socket socket, void *data, int size);
-	static void MDKDLLAPI Write(mdk_socket socket, const char* data);
+	static void MDKDLLAPI WriteTCP(mdk_socket socket, std::string str);
+	static void MDKDLLAPI WriteTCP(mdk_socket socket, void *data, int size);
+	static void MDKDLLAPI WriteTCP(mdk_socket socket, const char* data);
 
+	static void MDKDLLAPI WriteUDP(mdk_socket socket, std::string str, const struct sockaddr* addr);
+	static void MDKDLLAPI WriteUDP(mdk_socket socket, void *data, int size, const struct sockaddr* addr);
+	static void MDKDLLAPI WriteUDP(mdk_socket socket, const char* data, const struct sockaddr* addr);
+	
 	static int MDKDLLAPI GetIPFromSocket(mdk_socket socket);
 	
 	inline MDKDLLAPI mdk_loop GetLoop() { return m_loop; }
 	
 	inline int MDKDLLAPI GetIPFromSocket() { return GetIPFromSocket(m_socket); }
 	
-	inline void MDKDLLAPI Write(std::string str) { Write(m_socket, str); }
-	inline void MDKDLLAPI Write(void* data, int size) { Write(m_socket, data, size); }
-	inline void MDKDLLAPI Write(const char* data) { Write(m_socket, data); }
+	inline void MDKDLLAPI WriteTCP(std::string str) { WriteTCP(m_socket, str); }
+	inline void MDKDLLAPI WriteTCP(void* data, int size) { WriteTCP(m_socket, data, size); }
+	inline void MDKDLLAPI WriteTCP(const char* data) { WriteTCP(m_socket, data); }
+	
+	inline void MDKDLLAPI WriteUDP(std::string str, const struct sockaddr* addr) { WriteUDP(m_socket, str, addr); }
+	inline void MDKDLLAPI WriteUDP(void* data, int size, const struct sockaddr* addr) { WriteUDP(m_socket, data, size, addr); }
+	inline void MDKDLLAPI WriteUDP(const char* data, const struct sockaddr* addr) { WriteUDP(m_socket, data, addr); }
 	
 	inline void MDKDLLAPI Close() { Close(m_socket); }
 

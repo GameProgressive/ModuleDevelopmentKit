@@ -56,7 +56,7 @@ void libuv_callback_on_client_tcp_connection(uv_connect_t *req, int status)
 	
 	client_pointer = (CTemplateClient*)req->handle->data;
 
-	if (!client_pointer->OnNewConnection((mdk_socket)req->handle, status) == 0)
+	if (!client_pointer->OnTCPNewConnection((mdk_socket)req->handle, status) == 0)
 	{
 		free(req);
 		return;
@@ -84,7 +84,7 @@ void libuv_callback_on_client_tcp_read(uv_stream_t *client, ssize_t nread, const
 	if (!client->data)
 		return;
 
-	client_pointer->OnRead(client, buf->base, nread);
+	client_pointer->OnTCPRead(client, buf->base, nread);
 
 	uv_read_start(client, libuv_callback_allocate_buffer, libuv_callback_on_client_tcp_read);
 }

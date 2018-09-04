@@ -25,7 +25,7 @@
 extern void libuv_callback_on_close(uv_handle_t *handle);
 extern void libuv_callback_allocate_buffer(uv_handle_t *handle, size_t size, uv_buf_t* buf);
 void libuv_callback_on_server_tcp_new_connection(uv_stream_t *server, int status);
-void libuv_callback_on_server_udp_new_connection(uv_udp_t* handle, ssize_t nread, const uv_buf_t* recv, const struct sockaddr* addr, unsigned int flags);
+void libuv_callback_on_server_udp_read(uv_udp_t* handle, ssize_t nread, const uv_buf_t* recv, const struct sockaddr* addr, unsigned int flags);
 void libuv_callback_on_server_tcp_read(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf);
 
 MDKDLLAPI CTemplateServer::CTemplateServer() {}
@@ -41,6 +41,7 @@ bool MDKDLLAPI CTemplateServer::Bind(const char *ip, int port, bool udp)
 	// Initialize the socket
 	if (udp)
 	{
+		m_sockType = SOCKET_UDP;
 		real_udp_socket = (uv_udp_t*)malloc(sizeof(uv_udp_t));
 		r = uv_udp_init((uv_loop_t*)m_loop, real_udp_socket);
 	}
@@ -74,7 +75,7 @@ bool MDKDLLAPI CTemplateServer::Bind(const char *ip, int port, bool udp)
 	if (udp)
 		r = uv_udp_recv_start((uv_udp_t*)real_udp_socket, libuv_callback_allocate_buffer, libuv_callback_on_server_udp_new_connection);
 	else
-		r = uv_listen((uv_stream_t*)real_tcp_socket, DEFAULT_BACKLOG, libuv_callback_on_server_tcp_new_connection);
+		r = uv_listen((uv_stream_t*)real_tcp_socket, DEFAULT_BACKLOG, libuv_callback_on_server_udp_read);
 
 	if (r)
 	{
@@ -129,7 +130,7 @@ void libuv_callback_on_server_tcp_new_connection(uv_stream_t *server_socket, int
 
 	client_socket->data = server_socket->data;
 	
-	if (!client_data->GetSocket()->OnNewConnection((mdk_socket)client_socket, 0))
+	if (!client_data->GetSocket()->OnTCPNewConnection((mdk_socket)client_socket, 0))
 	{
 		uv_close((uv_handle_t*)client_socket, libuv_callback_on_close);
 		return;
@@ -165,35 +166,40 @@ void libuv_callback_on_server_tcp_read(uv_stream_t *stream, ssize_t nread, const
 	LOG_INFO("Server", "TCP: Received %s from client", buf->base);
 #endif
 
-	CTemplateSocket::GetSocketExtraData((mdk_socket)stream)->GetSocket()->OnRead(stream, buf->base, nread);
+	CTemplateSocket::GetSocketExtraData((mdk_socket)stream)->GetSocket()->OnTCPRead(stream, buf->base, nread);
 	
 	//if (buf->base)
 	//	free(buf->base);
 }
 
-void libuv_callback_on_server_udp_new_connection(uv_udp_t* handle, ssize_t nread, const uv_buf_t* recv, const struct sockaddr* addr, unsigned int flags)
+void libuv_callback_on_server_udp_read(uv_udp_t* handle, ssize_t nread, const uv_buf_t* recv, const struct sockaddr* addr, unsigned int flags)
 {
 	CTemplateSocket* socket_ptr = NULL;
-	char ipstr[256];
+	char ip[INET_ADDRSTRLEN];
+	struct sockaddr_in* addr_in = (struct sockaddr_in*)addr;
+	
+	ip[0] = '\0';
 	
 	if (nread <= 0)
 	{
-		free(recv->base);
+		uv_close((uv_handle_t*) handle, libuv_callback_on_close);
 		return;
 	}
 	
-	if (handle == NULL || handle->data == NULL)
+	if (handle->data == NULL)
 	{
-		free(recv->base);
+		uv_close((uv_handle_t*) handle, libuv_callback_on_close);
 		return;
 	}
 	
 	socket_ptr = (CTemplateSocket*)handle->data;
 	
 	int x = CTemplateServer::GetIPFromSocket(handle);
-	inet_ntop(AF_INET, &x, ipstr, sizeof(ipstr));
+	inet_ntop(AF_INET, &(addr_in->sin_addr), ip, INET_ADDRSTRLEN);
 	
-	LOG_INFO("Server", "UDP Connect: %s %s %d", recv->base, ipstr, nread);
+	LOG_INFO("Server", "UDP: Connected %s(%d) %s (Flags: %u)", recv->base, nread, ip, flags);
 	
-	free(recv->base);
+	CTemplateSocket::GetSocketExtraData((mdk_socket)handle)->GetSocket()->OnUDPRead(handle, addr, recv->base, nread);
+	
+	uv_udp_recv_start(handle, libuv_callback_allocate_buffer, libuv_callback_on_server_udp_read);
 }

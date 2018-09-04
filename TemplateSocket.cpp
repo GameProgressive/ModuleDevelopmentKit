@@ -25,7 +25,8 @@
 int uv_udp_getpeername(const uv_udp_t* handle, struct sockaddr* name, int* namelen);
 void libuv_callback_allocate_buffer(uv_handle_t *handle, size_t size, uv_buf_t* buf);
 void libuv_callback_on_close(uv_handle_t *handle);
-void libuv_callback_when_write_finished(uv_write_t* req, int status);
+void libuv_callback_when_tcp_write_finished(uv_write_t* req, int status);
+void libuv_callback_when_udp_write_finished(uv_udp_send_t* req, int);
 
 MDKDLLAPI CTemplateSocket::CTemplateSocket()
 {
@@ -64,38 +65,53 @@ void MDKDLLAPI CTemplateSocket::Close(mdk_socket socket)
 	uv_close((uv_handle_t*)socket, libuv_callback_on_close);
 }
 
-void MDKDLLAPI CTemplateSocket::Write(mdk_socket socket, void *data, int size)
+void MDKDLLAPI CTemplateSocket::WriteTCP(mdk_socket socket, void *data, int size)
 {
 	uv_write_t *req = (uv_write_t*)malloc(sizeof(uv_write_t));
 	uv_buf_t buf;
 	uv_stream_t* real_socket = (uv_stream_t*)socket;
-	CClientData* client_data = NULL;
-	
-	if (!real_socket->data)
-		return;
 
-	client_data = GetSocketExtraData(socket);
-
-	if (client_data->GetSocket()->GetType() == SOCKET_TCP)
-	{
 #ifdef _DEBUG
-		LOG_INFO("Socket", "TCP: Sending %s to client", (char*)data);
+	LOG_INFO("Socket", "TCP: Sending %s to client", (char*)data);
 #endif
-		buf.len = size;
-		buf.base = (char*)data;
-	
-		uv_write(req, real_socket, &buf, 1, libuv_callback_when_write_finished);
-	}
+	buf.len = size;
+	buf.base = (char*)data;
+
+	uv_write(req, real_socket, &buf, 1, libuv_callback_when_tcp_write_finished);
 }
 
-void MDKDLLAPI CTemplateSocket::Write(mdk_socket socket, std::string str)
+void MDKDLLAPI CTemplateSocket::WriteUDP(mdk_socket socket, void *data, int size, const struct sockaddr* addr)
 {
-	Write(socket, (void*)str.c_str(), str.length());
+	uv_udp_send_t* req = (uv_udp_send_t*)malloc(sizeof(uv_udp_send_t));
+	uv_buf_t buf;
+
+#ifdef _DEBUG
+	LOG_INFO("Socket", "UDP: Sending %s to client", (char*)data);
+#endif
+	buf.len = size;
+	buf.base = (char*)data;
+
+	uv_udp_send(req, (uv_udp_t*)socket, &buf, 1, addr, libuv_callback_when_udp_write_finished);
 }
 
-void MDKDLLAPI CTemplateSocket::Write(mdk_socket socket,  const char* data)
+void MDKDLLAPI CTemplateSocket::WriteUDP(mdk_socket socket, std::string str, const struct sockaddr* addr)
 {
-	Write(socket, (void*)data, strlen(data));
+	WriteUDP(socket, (void*)str.c_str(), str.length(), addr);
+}
+
+void MDKDLLAPI CTemplateSocket::WriteUDP(mdk_socket socket, const char* data, const struct sockaddr* addr)
+{
+	WriteUDP(socket, (void*)data, strlen(data), addr);
+}
+
+void MDKDLLAPI CTemplateSocket::WriteTCP(mdk_socket socket, std::string str)
+{
+	WriteTCP(socket, (void*)str.c_str(), str.length());
+}
+
+void MDKDLLAPI CTemplateSocket::WriteTCP(mdk_socket socket,  const char* data)
+{
+	WriteTCP(socket, (void*)data, strlen(data));
 }
 
 int MDKDLLAPI CTemplateSocket::GetIPFromSocket(mdk_socket socket)
@@ -125,8 +141,9 @@ MDKDLLAPI CClientData* CTemplateSocket::GetSocketExtraData(mdk_socket socket)
 }
 
 /* Virtual functions */
-MDKDLLAPI void CTemplateSocket::OnRead(mdk_socket, const char *, ssize_t) {}
-MDKDLLAPI bool CTemplateSocket::OnNewConnection(mdk_socket, int) { return true; }
+MDKDLLAPI void CTemplateSocket::OnTCPRead(mdk_socket, const char *, ssize_t) {}
+MDKDLLAPI bool CTemplateSocket::OnTCPNewConnection(mdk_socket, int) { return true; }
+MDKDLLAPI void CTemplateSocket::OnUDPRead(mdk_socket, const struct sockaddr* addr, const char *, ssize_t) {}
 
 // UV Callbacks
 void libuv_callback_on_close(uv_handle_t* handle)
@@ -141,7 +158,13 @@ void libuv_callback_on_close(uv_handle_t* handle)
 	}
 }
 
-void libuv_callback_when_write_finished(uv_write_t* req, int)
+void libuv_callback_when_tcp_write_finished(uv_write_t* req, int)
+{
+	if (req)
+		free(req);
+}
+
+void libuv_callback_when_udp_write_finished(uv_udp_send_t* req, int)
 {
 	if (req)
 		free(req);
