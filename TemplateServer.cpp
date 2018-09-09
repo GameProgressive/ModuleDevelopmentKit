@@ -73,9 +73,9 @@ bool MDKDLLAPI CTemplateServer::Bind(const char *ip, int port, bool udp)
 
 	/* Listen the socket */
 	if (udp)
-		r = uv_udp_recv_start((uv_udp_t*)real_udp_socket, libuv_callback_allocate_buffer, libuv_callback_on_server_udp_new_connection);
+		r = uv_udp_recv_start((uv_udp_t*)real_udp_socket, libuv_callback_allocate_buffer, libuv_callback_on_server_udp_read);
 	else
-		r = uv_listen((uv_stream_t*)real_tcp_socket, DEFAULT_BACKLOG, libuv_callback_on_server_udp_read);
+		r = uv_listen((uv_stream_t*)real_tcp_socket, DEFAULT_BACKLOG, libuv_callback_on_server_tcp_new_connection);
 
 	if (r)
 	{
