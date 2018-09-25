@@ -35,11 +35,16 @@
 #ifndef _WIN32
 	#include <sys/types.h>
 	#include <unistd.h>
+	#include <arpa/inet.h>
 #else
 	#include <BaseTsd.h>
+	#include <WS2tcpip.h>
 	typedef SSIZE_T ssize_t;
 	#define _SSIZE_T_DEFINED 1
 #endif
 
+#ifndef INET_ADDRSTRLEN
+#define INET_ADDRSTRLEN 16
+#endif
 
 #endif
