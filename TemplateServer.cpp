@@ -182,13 +182,11 @@ void libuv_callback_on_server_udp_read(uv_udp_t* handle, ssize_t nread, const uv
 	
 	if (nread <= 0)
 	{
-		uv_close((uv_handle_t*) handle, libuv_callback_on_close);
 		return;
 	}
 	
 	if (handle->data == NULL)
 	{
-		uv_close((uv_handle_t*) handle, libuv_callback_on_close);
 		return;
 	}
 	
@@ -200,6 +198,4 @@ void libuv_callback_on_server_udp_read(uv_udp_t* handle, ssize_t nread, const uv
 	LOG_INFO("Server", "UDP: Connected %s(%d) %s (Flags: %u)", recv->base, nread, ip, flags);
 	
 	CTemplateSocket::GetSocketExtraData((mdk_socket)handle)->GetSocket()->OnUDPRead(handle, addr, recv->base, nread);
-	
-	uv_udp_recv_start(handle, libuv_callback_allocate_buffer, libuv_callback_on_server_udp_read);
 }
