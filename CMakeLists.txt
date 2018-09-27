@@ -95,12 +95,14 @@ set(SOURCES
 	${CMAKE_CURRENT_LIST_DIR}/include/MDK/TemplateClient.h
 	${CMAKE_CURRENT_LIST_DIR}/include/MDK/TemplateServer.h
 	${CMAKE_CURRENT_LIST_DIR}/include/MDK/TemplateSocket.h
+	${CMAKE_CURRENT_LIST_DIR}/include/MDK/ThreadServer.h
 	${CMAKE_CURRENT_LIST_DIR}/Database.cpp
 	${CMAKE_CURRENT_LIST_DIR}/Utility.cpp
 	${CMAKE_CURRENT_LIST_DIR}/Query.cpp
 	${CMAKE_CURRENT_LIST_DIR}/TemplateClient.cpp
 	${CMAKE_CURRENT_LIST_DIR}/TemplateServer.cpp
 	${CMAKE_CURRENT_LIST_DIR}/TemplateSocket.cpp
+	${CMAKE_CURRENT_LIST_DIR}/ThreadServer.cpp
 )
 
 if (WIN32)

@@ -16,34 +16,33 @@
 #define _MODULEDEVELOPMENTKIT_MODULENTRYPOINT_H_
 
 /* Required runtime inclusions */
-#include <vector>
-#include <map>
-
-#include "Database.h"
-
-/* Module definition */
-typedef std::map<std::string, std::string> ModuleConfigMap;
-
-typedef struct SModuleMain
-{
-	char *ip;
-	int port;
-	ModuleConfigMap cfg;
-	CDatabase* db;
-} ModuleMain;
+#include "ThreadServer.h"
 
 enum EErrorCodes
 {
 	ERROR_NONE = 0,
 	ERROR_UNKNOWN,
-	ERROR_MYSQL_POINTER,
 	ERROR_BIND_ERROR,
+	ERROR_DATABASE_ERROR,
+	ERROR_CONFIGURATION_ERROR,
 	
-	/* Reserved for Windows */
-	ERROR_STILL_ALIVE = 259,
-
-	/* Reserved for Linux */
-	ERROR_LINUX_UNSUPPORTED_RESERVED = 260,
+	ERROR_STILL_ALIVE = -1,
 };
+
+#if _WIN32 && _MSC_VER
+	#define DECL_DLLEXPORT  __declspec(dllexport)
+#else
+	#define DECL_DLLEXPORT
+#endif
+
+#ifdef __cplusplus
+	#define CPP_EXTERN_C_BEGIN extern "C" {
+	#define CPP_EXTERN_C_END }
+#else
+	#define CPP_EXTERN_C_BEGIN
+	#define CPP_EXTERN_C_END
+#endif
+
+#define ModuleEntryPoint(class, default_port, udp) CPP_EXTERN_C_BEGIN DECL_DLLEXPORT CThreadServer* MDKModule() { return new class(default_port, udp); } CPP_EXTERN_C_END
 
 #endif

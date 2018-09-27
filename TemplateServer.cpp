@@ -182,11 +182,13 @@ void libuv_callback_on_server_udp_read(uv_udp_t* handle, ssize_t nread, const uv
 	
 	if (nread <= 0)
 	{
+		LOG_INFO("Server", "UDP: Received nothing from client");
 		return;
 	}
 	
 	if (handle->data == NULL)
 	{
+		LOG_INFO("Server", "UDP: Wrong pointer!");
 		return;
 	}
 	

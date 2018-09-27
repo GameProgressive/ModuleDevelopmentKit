@@ -67,9 +67,11 @@ public:
 	/* Virtual function called when a new connection happens */
 	virtual MDKDLLAPI bool OnTCPNewConnection(mdk_socket, int) = 0;
 	
-	/* TODO: How can i do multiple loops???? */
-	/* This function run the loop, but WTF is slow with this :X */
-	void MDKDLLAPI Run();
+	/* Start the server */
+	int MDKDLLAPI StartServer();
+	
+	/* Stops the server loop */
+	void MDKDLLAPI StopServer();
 	
 	/* Close the connection of a socket */
 	static void MDKDLLAPI Close(mdk_socket socket);

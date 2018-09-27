@@ -46,7 +46,7 @@ MDKDLLAPI CTemplateSocket::~CTemplateSocket()
 	if (m_loop)
 	{
 		uv_loop_t* real_loop = (uv_loop_t*)m_loop;
-		uv_loop_close(real_loop);
+		while (uv_loop_close(real_loop) != UV_EBUSY);
 		free(real_loop);
 	}
 	
@@ -54,15 +54,19 @@ MDKDLLAPI CTemplateSocket::~CTemplateSocket()
 	m_socket = NULL;
 }
 
-void MDKDLLAPI CTemplateSocket::Run()
+int MDKDLLAPI CTemplateSocket::StartServer()
 {
-	//TODO!
-	uv_run((uv_loop_t*)m_loop, UV_RUN_DEFAULT);
+	return uv_run((uv_loop_t*)m_loop, UV_RUN_DEFAULT);
 }
 
 void MDKDLLAPI CTemplateSocket::Close(mdk_socket socket)
 {
 	uv_close((uv_handle_t*)socket, libuv_callback_on_close);
+}
+
+void MDKDLLAPI CTemplateSocket::StopServer()
+{
+	uv_stop((uv_loop_t*)m_loop);
 }
 
 void MDKDLLAPI CTemplateSocket::WriteTCP(mdk_socket socket, void *data, int size)
