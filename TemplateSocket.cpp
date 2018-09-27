@@ -66,6 +66,12 @@ void MDKDLLAPI CTemplateSocket::Close(mdk_socket socket)
 
 void MDKDLLAPI CTemplateSocket::StopServer()
 {
+	if (m_sockType == SOCKET_UDP)
+	{
+		uv_udp_recv_stop((uv_udp_t*)m_socket);
+	}
+	
+	Close(m_socket);
 	uv_stop((uv_loop_t*)m_loop);
 }
 
