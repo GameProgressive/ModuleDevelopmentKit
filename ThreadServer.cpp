@@ -97,6 +97,7 @@ void CThreadServer::Execute()
 		return;
 	}
 	
+	m_iExitCode = ERROR_STILL_ALIVE;
 	m_iExitCode = StartServer();
 }
 
