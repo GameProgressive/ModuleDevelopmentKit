@@ -69,9 +69,10 @@ if (WITH_MARIADB AND NOT WITH_MYSQL)
 		add_subdirectory(mariadb-connector-c)
 		include_directories("mariadb-connector-c/include")
 		include_directories("${CMAKE_CURRENT_BINARY_DIR}/mariadb-connector-c/include") # mariadb config
-		set(MARIADB_LIBRARIES libmariadb)
+		set(MYMR_DATABASE_LIBRARY libmariadb)
 	else()
 		include_directories(${MARIADB_INCLUDE_DIRS})
+		set(MYMR_DATABASE_LIBRARY ${MARIADB_LIBRARIES})
 	endif()
 endif()
 
@@ -81,7 +82,8 @@ if (WITH_MYSQL)
 	if (NOT MYSQL_FOUND)
 		message("Failed to find libmysql")
 	else()
-		include_directories(${MYSQL_INCLUDES})
+		include_directories(${MYSQL_INCLUDE_DIR})
+		set(MYMR_DATABASE_LIBRARY ${MYSQL_LIBRARIES})
 	endif()
 endif()
 
@@ -115,8 +117,8 @@ endif()
 
 set(MDK_LIBRARIES ${MDK_LIBRARIES} ${LIBUV_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 
-if (WITH_MARIADB)
-	set(MDK_LIBRARIES ${MDK_LIBRARIES} ${MARIADB_LIBRARIES})
+if (WITH_MARIADB OR WITH_MYSQL)
+	set(MDK_LIBRARIES ${MDK_LIBRARIES} ${MYMR_DATABASE_LIBRARY})
 endif()
 
 if (WITH_SQLITE)
