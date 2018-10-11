@@ -25,7 +25,7 @@ CThreadServer::CThreadServer(int defaultport, bool udp)
 	m_bUDP = udp;
 	m_iDefaultPort = defaultport;
 	m_lpThread = NULL;
-	m_iExitCode = 0;
+	m_ulExitCode = 0;
 	m_lpDatabase = NULL;
 	m_port = -1;
 	m_ip = NULL;
@@ -77,28 +77,28 @@ void CThreadServer::Stop()
 
 bool CThreadServer::IsRunning()
 {
-	return m_iExitCode == ERROR_STILL_ALIVE;
+	return m_ulExitCode == ERROR_STILL_ALIVE;
 }
 
 unsigned long CThreadServer::GetExitCode()
 {
-	return m_iExitCode;
+	return m_ulExitCode;
 }
 
 void CThreadServer::Execute()
 {
-	m_iExitCode = Initialize();
-	if (m_iExitCode != ERROR_NONE)
+	m_ulExitCode = Initialize();
+	if (m_ulExitCode != ERROR_NONE)
 		return;
 	
 	if (!Bind((const char*)m_ip, m_port, m_bUDP))
 	{
-		m_iExitCode = ERROR_BIND_ERROR;
+		m_ulExitCode = ERROR_BIND_ERROR;
 		return;
 	}
 	
-	m_iExitCode = ERROR_STILL_ALIVE;
-	m_iExitCode = StartServer();
+	m_ulExitCode = ERROR_STILL_ALIVE;
+	m_ulExitCode = StartServer();
 }
 
 int CThreadServer::Initialize() { return ERROR_NONE; }

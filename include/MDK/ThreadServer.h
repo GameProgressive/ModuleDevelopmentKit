@@ -80,7 +80,7 @@ public:
 	
 protected:
 	mdk_thread m_lpThread;
-	unsigned long m_iExitCode;
+	unsigned long m_ulExitCode;
 	CDatabase* m_lpDatabase;
 	ModuleConfigMap m_cfg;
 	int m_iDefaultPort;
