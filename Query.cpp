@@ -121,7 +121,7 @@ MDKDLLAPI bool CResultSet::ExecuteQuery(CDatabase* db, std::string str)
 		
 
 		fields = sqlite3_column_count(stmt);
-		if (fields < 0)
+		if (fields == 0)
 		{
 			sqlite3_finalize(stmt);
 			return false;

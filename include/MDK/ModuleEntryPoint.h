@@ -18,6 +18,8 @@
 /* Required runtime inclusions */
 #include "ThreadServer.h"
 
+#include <limits.h>
+
 enum EErrorCodes
 {
 	ERROR_NONE = 0,
@@ -26,7 +28,7 @@ enum EErrorCodes
 	ERROR_DATABASE_ERROR,
 	ERROR_CONFIGURATION_ERROR,
 	
-	ERROR_STILL_ALIVE = -1,
+	ERROR_STILL_ALIVE = ULONG_MAX,
 };
 
 #if _WIN32 && _MSC_VER
