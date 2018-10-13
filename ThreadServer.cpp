@@ -20,7 +20,7 @@
 
 void libuv_callback_general_thread_function(void* arg);
 
-CThreadServer::CThreadServer(int defaultport, bool udp)
+MDKDLLAPI CThreadServer::CThreadServer(int defaultport, bool udp)
 {
 	m_bUDP = udp;
 	m_iDefaultPort = defaultport;
@@ -31,12 +31,12 @@ CThreadServer::CThreadServer(int defaultport, bool udp)
 	m_ip = NULL;
 }
 
-CThreadServer::~CThreadServer()
+MDKDLLAPI CThreadServer::~CThreadServer()
 {
 	Stop();
 }
 
-bool CThreadServer::Start(const char* ip, int port, CDatabase* db, ModuleConfigMap cfg)
+bool MDKDLLAPI CThreadServer::Start(const char* ip, int port, CDatabase* db, ModuleConfigMap cfg)
 {
 	uv_thread_t* thread = (uv_thread_t*)malloc(sizeof(uv_thread_t));
 	
@@ -61,7 +61,7 @@ bool CThreadServer::Start(const char* ip, int port, CDatabase* db, ModuleConfigM
 	return true;
 }
 
-void CThreadServer::Stop()
+void MDKDLLAPI CThreadServer::Stop()
 {
 	if (!m_lpThread)
 		return;
@@ -75,17 +75,17 @@ void CThreadServer::Stop()
 	m_lpThread = NULL;
 }
 
-bool CThreadServer::IsRunning()
+bool MDKDLLAPI CThreadServer::IsRunning()
 {
 	return m_ulExitCode == ERROR_STILL_ALIVE;
 }
 
-unsigned long CThreadServer::GetExitCode()
+unsigned long MDKDLLAPI CThreadServer::GetExitCode()
 {
 	return m_ulExitCode;
 }
 
-void CThreadServer::Execute()
+void MDKDLLAPI CThreadServer::Execute()
 {
 	m_ulExitCode = Initialize();
 	if (m_ulExitCode != ERROR_NONE)
@@ -101,7 +101,7 @@ void CThreadServer::Execute()
 	m_ulExitCode = StartServer();
 }
 
-int CThreadServer::Initialize() { return ERROR_NONE; }
+int MDKDLLAPI CThreadServer::Initialize() { return ERROR_NONE; }
 
 void libuv_callback_general_thread_function(void* arg)
 {

@@ -32,15 +32,15 @@ typedef void* mdk_thread;
 class CThreadServer : public CTemplateServer
 {
 public:
-	CThreadServer(int defaultport, bool udp);
-	~CThreadServer();
+	MDKDLLAPI CThreadServer(int defaultport, bool udp);
+	MDKDLLAPI ~CThreadServer();
 	
 	/*
 		Function: Initialize
 		Description: Initialize the thread server after it has been started
 		Return: exit code if error, ERROR_NONE if no error
 	*/
-	virtual int Initialize();
+	virtual int MDKDLLAPI Initialize();
 	
 	/*
 		Function: Start
@@ -48,27 +48,27 @@ public:
 		Parameters:
 			arg => any argument to be passed into the thread
 	*/
-	bool Start(const char* ip, int port, CDatabase* db, ModuleConfigMap cfg);
+	bool MDKDLLAPI Start(const char* ip, int port, CDatabase* db, ModuleConfigMap cfg);
 	
 	/*
 		Function: Stop
 		Description: Stop the thread
 	*/
-	void Stop();
+	void MDKDLLAPI Stop();
 
 	/*
 		Function: IsRunning
 		Descrption: Checks if the module is running
 		Return: true if the module is running, otherwise false
 	*/
-	bool IsRunning();
+	bool MDKDLLAPI IsRunning();
 
 	/*
 		Function: GetExitCode
 		Description: Get the exit code of the thread
 		Return: the exit code
 	*/
-	unsigned long GetExitCode();
+	unsigned long MDKDLLAPI GetExitCode();
 	
 
 	/*
@@ -76,7 +76,7 @@ public:
 		Description: Execute the thread after it has been started
 		NOTE: You should only call this function if you want to handle your loop manually
 	*/
-	void Execute();
+	void MDKDLLAPI Execute();
 	
 protected:
 	mdk_thread m_lpThread;
