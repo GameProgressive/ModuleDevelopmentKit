@@ -23,7 +23,7 @@
 
 /* Prototypes */
 int uv_udp_getpeername(const uv_udp_t* handle, struct sockaddr* name, int* namelen);
-void libuv_callback_allocate_buffer(uv_handle_t *handle, size_t size, uv_buf_t* buf);
+void libuv_callback_allocate_buffer(uv_handle_t *handle, long unsigned int size, uv_buf_t* buf);
 void libuv_callback_on_close(uv_handle_t *handle);
 void libuv_callback_when_tcp_write_finished(uv_write_t* req, int status);
 void libuv_callback_when_udp_write_finished(uv_udp_send_t* req, int);
@@ -75,7 +75,7 @@ void MDKDLLAPI CTemplateSocket::StopServer()
 	uv_stop((uv_loop_t*)m_loop);
 }
 
-void MDKDLLAPI CTemplateSocket::WriteTCP(mdk_socket socket, void *data, int size)
+void MDKDLLAPI CTemplateSocket::WriteTCP(mdk_socket socket, void *data, size_t size)
 {
 	uv_write_t *req = (uv_write_t*)malloc(sizeof(uv_write_t));
 	uv_buf_t buf;
@@ -90,7 +90,7 @@ void MDKDLLAPI CTemplateSocket::WriteTCP(mdk_socket socket, void *data, int size
 	uv_write(req, real_socket, &buf, 1, libuv_callback_when_tcp_write_finished);
 }
 
-void MDKDLLAPI CTemplateSocket::WriteUDP(mdk_socket socket, void *data, int size, const struct sockaddr* addr)
+void MDKDLLAPI CTemplateSocket::WriteUDP(mdk_socket socket, void *data, size_t size, const struct sockaddr* addr)
 {
 	uv_udp_send_t* req = (uv_udp_send_t*)malloc(sizeof(uv_udp_send_t));
 	uv_buf_t buf;
@@ -180,7 +180,7 @@ void libuv_callback_when_udp_write_finished(uv_udp_send_t* req, int)
 		free(req);
 }
 
-void libuv_callback_allocate_buffer(uv_handle_t*, size_t size, uv_buf_t *buf)
+void libuv_callback_allocate_buffer(uv_handle_t*, long unsigned int size, uv_buf_t *buf)
 {
 	*buf = uv_buf_init((char*)malloc(size), size);
 }

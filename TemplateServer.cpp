@@ -23,7 +23,7 @@
 
 // Parse callbacks from TemplateSocket
 extern void libuv_callback_on_close(uv_handle_t *handle);
-extern void libuv_callback_allocate_buffer(uv_handle_t *handle, size_t size, uv_buf_t* buf);
+extern void libuv_callback_allocate_buffer(uv_handle_t *handle, long unsigned int size, uv_buf_t* buf);
 void libuv_callback_on_server_tcp_new_connection(uv_stream_t *server, int status);
 void libuv_callback_on_server_udp_read(uv_udp_t* handle, ssize_t nread, const uv_buf_t* recv, const struct sockaddr* addr, unsigned int flags);
 void libuv_callback_on_server_tcp_read(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf);
