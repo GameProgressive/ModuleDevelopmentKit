@@ -1,7 +1,7 @@
-[submodule "mariadb-connector-c"]
-	path = mariadb-connector-c
-	url = https://github.com/MariaDB/mariadb-connector-c
 [submodule "libuv"]
 	path = libuv
 	url = https://github.com/libuv/libuv
 	branch = v1.x
+[submodule "amy"]
+	path = amy
+	url = https://github.com/liancheng/amy
