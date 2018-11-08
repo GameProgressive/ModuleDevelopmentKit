@@ -20,5 +20,10 @@ git submodule update --recursive --remote
 ```
 
 ### Future development branch roadmap
-[ ] Replace MySQL/MariaDB C API with Amy
+[x] Replace MySQL/MariaDB C API with Amy
 [ ] Replace old libUV code with Boost::Asio/Asio
+
+### Notes
+***CentOS Work Ardound:*** CentOS has some strange bug with rh-mariadb102, 
+apperently it's not shipping a correct mysql/errmsg.h, that's why we're forced to include it from /usr/include.
+This produces error on systems where mysql include directory isn't inside /usr/include (like FreeBSD).
