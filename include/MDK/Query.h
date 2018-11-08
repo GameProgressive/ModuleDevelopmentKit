@@ -18,6 +18,7 @@
 #include "Database.h"
 
 #include <vector>
+#include <string>
 
 /**
 	This class rappresents the result data of a SELECT or COUNT query.
@@ -34,9 +35,17 @@
 class CResultSet
 {
 public:
-	MDKDLLAPI CResultSet();
+	MDKDLLAPI CResultSet(void* result_set);
 	MDKDLLAPI ~CResultSet();
-
+	
+	/**
+		Internal use only! This function is used to store async result set into
+		the result set, make sure to not use it!
+	*/
+	MDKDLLAPI void ProcessResultSet(void* rs);
+	
+	inline MDKDLLAPI bool IsQueryExecuting() { return m_bExecuting }
+	
 	MDKDLLAPI bool ExecuteQuery(CDatabase* db, std::string str);
 
 	MDKDLLAPI unsigned int GetUIntFromRow(size_t index);
@@ -53,6 +62,7 @@ public:
 private:
 	std::vector<std::vector<std::string>> m_vvRows;
 	size_t m_uiPos;
+	bool m_bExecuting;
 };
 
 bool MDKDLLAPI mdk_only_run_query(CDatabase* db, std::string query);

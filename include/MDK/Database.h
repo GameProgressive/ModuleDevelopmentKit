@@ -19,7 +19,7 @@
 
 enum EDatabaseType
 {
-	DATABASE_TYPE_MARIADB = 0,
+	DATABASE_TYPE_MYSQL = 0,
 	DATABASE_TYPE_SQLITE = 1,
 };
 
@@ -63,10 +63,11 @@ public:
 	inline MDKDLLAPI mdk_database GetDatabasePointer() { return m_Pointed_db; }
 
 private:
-	mdk_database m_Pointed_db;
 	//Instantiation of mdk_database_pointer
+	mdk_database m_Pointed_db;
+
+	//Instantiation of EDatabaseType	
 	EDatabaseType m_eDatabasetype;
-	//Instantiation of EDatabaseType
 	
 	unsigned int m_uiProtocol;
 };
