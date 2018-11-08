@@ -15,20 +15,18 @@ cmake_minimum_required(VERSION 3.0)
 project("ModuleDevelopmentKit")
 
 option(WITH_SQLITE "Enable SQLite support" ON)
-option(WITH_MARIADB "Enable MariaDB support" ON)
-option(WITH_MYSQL "Enable MySQL rather than MariaDB" OFF)
+option(WITH_MYSQL "Enable MySQL/MariaDB support" ON)
+option(USE_BOOST_ASIO "Use Boost.Asio rather than Asio standalone" ON)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ModuleDevelopmentKit_SOURCE_DIR}/cmake)
 
 # Add definitions for w32 build that dosen't support _WIN32 macro
 if (WIN32)
 	add_definitions("-DWIN32 -D__WIN32__ -D_CRT_SECURE_NO_WARNINGS")
-endif()
-
-# Set -fPIC to allow compiling mdk shared library with libuv
-if (NOT WIN32)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+else()
+	# Set -fPIC to allow compiling mdk shared library with libuv
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 endif()
 
 # Set CMake output directory
@@ -59,32 +57,31 @@ if (WITH_SQLITE)
 	include_directories(sqlite3)
 endif()
 
-# Mariadb inclusion
-if (WITH_MARIADB AND NOT WITH_MYSQL)
+# Asynchronous MySQL library (amy)
+if (WITH_MYSQL)
+	# Find Boost package (required by amy)
+	find_package(Boost REQUIRED COMPONENTS date_time)
+
+	if (Boost_MAJOR_VERSION GREATER 0 AND Boost_MINOR_VERSION GREATER 67)
+		find_package(Boost REQUIRED COMPONENTS beast)
+	endif()
+
+	set(buid_examples OFF)
+	set(build_tests OFF)
+	add_subdirectory("amy")
+	include_directories("amy/include")
+
+	# Find any connector (MariaDB or MySQL, required by amy)
 	find_package(MariaDB)
 
 	if(NOT MARIADB_FOUND)
-		message("Failed to find libmariadb, will build bundled copy.")
-		set(WITH_UNIT_TESTS OFF) # Remove useless tests from mariadb build
-		add_subdirectory(mariadb-connector-c)
-		include_directories("mariadb-connector-c/include")
-		include_directories("${CMAKE_CURRENT_BINARY_DIR}/mariadb-connector-c/include") # mariadb config
-		set(MYMR_DATABASE_LIBRARY libmariadb)
+		message("Failed to find libmariadb, trying to find libmysql...")
+	
+		find_package(MySQL REQUIRED)
+		set(MDK_DATABASE_LIBRARY ${MYSQL_LIBRARIES})
 	else()
-		include_directories(${MARIADB_INCLUDE_DIRS})
-		set(MYMR_DATABASE_LIBRARY ${MARIADB_LIBRARIES})
-	endif()
-endif()
-
-if (WITH_MYSQL)
-	find_package(MySQL)
-
-	if (NOT MYSQL_FOUND)
-		message("Failed to find libmysql")
-	else()
-		include_directories(${MYSQL_INCLUDE_DIR})
-		set(MYMR_DATABASE_LIBRARY ${MYSQL_LIBRARIES})
-	endif()
+		set(MDK_DATABASE_LIBRARY ${MARIADB_LIBRARIES})
+	endif()	
 endif()
 
 set(SOURCES
@@ -110,27 +107,28 @@ set(SOURCES
 if (WIN32)
 	set(SOURCES
 		${SOURCES}
-		${CMAKE_CURRENT_LIST_DIR}/resource.h
-	)
+		${CMAKE_CURRENT_LIST_DIR}/resource.h)
+
 	set_source_files_properties(${CMAKE_CURRENT_LIST_DIR}/Common.rc PROPERTIES LANGUAGE RC)
 endif()
 
+add_library(MDK SHARED ${SOURCES})
+
 set(MDK_LIBRARIES ${MDK_LIBRARIES} ${LIBUV_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 
-if (WITH_MARIADB OR WITH_MYSQL)
-	set(MDK_LIBRARIES ${MDK_LIBRARIES} ${MYMR_DATABASE_LIBRARY})
+if (WITH_MYSQL)
+	set(MDK_LIBRARIES ${MDK_LIBRARIES} ${MDK_DATABASE_LIBRARY})
+	target_compile_definitions(MDK PUBLIC ENABLE_MYSQL_SUPPORT=1)
+	target_include_directories(MDK PRIVATE ${Boost_INCLUDE_DIRS})
 endif()
 
 if (WITH_SQLITE)
 	set(MDK_LIBRARIES ${MDK_LIBRARIES} sqlite3)
+	target_compile_definitions(MDK PUBLIC ENABLE_SQLITE3_SUPPORT=1)
 endif()
 
-add_library(MDK SHARED ${SOURCES})
+if (USE_BOOST_ASIO)
+	target_compile_definitions(MDK PRIVATE USE_BOOST_ASIO=1)
+endif()
+
 target_link_libraries(MDK ${MDK_LIBRARIES})
-
-if (WITH_MARIADB)
-	target_compile_definitions(MDK PUBLIC __MARIADB__=1)
-endif()
-if (WITH_SQLITE)
-	target_compile_definitions(MDK PUBLIC __SQLITE__=1)
-endif()
