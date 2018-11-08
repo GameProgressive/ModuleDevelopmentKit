@@ -17,26 +17,36 @@
 
 #include "Utility.h"
 
-#ifdef __MARIADB__
-	#include <mysql.h>
+static bool bIsConnecting = false;
+
+#ifdef ENABLE_MYSQL_SUPPORT
+	#include "centosworkaround.h"
+	#include <amy.hpp>
+	
+	static void amy_handle_connect(AMY_SYSTEM_NS::error_code const& ec)
+	{
+		bIsConnecting = false;
+	}
 #endif
-#ifdef __SQLITE__
+
+#ifdef ENABLE_SQLITE3_SUPPORT
 	#include <sqlite3.h>
 #endif
 
-#if !defined(__MARIADB__) && !defined(__SQLITE__)
+#if !defined(ENABLE_MYSQL_SUPPORT) && !defined(ENABLE_SQLITE3_SUPPORT)
 	#error "Please change your configuration and choose at least one database engine!"
 #endif
 
 MDKDLLAPI CDatabase::CDatabase()
 {
-#ifdef __MARIADB__
-	m_eDatabasetype = DATABASE_TYPE_MARIADB;
-#elif defined(__SQLITE__)
+#ifdef ENABLE_MYSQL_SUPPORT
+	m_eDatabasetype = DATABASE_TYPE_MYSQL;
+#elif defined(ENABLE_SQLITE3_SUPPORT)
 	m_eDatabasetype = DATABASE_TYPE_SQLITE;
 #endif
+
+	bIsConnecting = false;
 	m_Pointed_db = NULL;
-	m_uiProtocol = 0;
 }
 
 MDKDLLAPI CDatabase::~CDatabase()
@@ -44,39 +54,27 @@ MDKDLLAPI CDatabase::~CDatabase()
 	Disconnect();
 }
 
-MDKDLLAPI bool CDatabase::Connect(EDatabaseType type, const char *host, int port, const char *username, const char *database_name, const char *password)
+MDKDLLAPI bool CDatabase::Connect(void* io_service, EDatabaseType type, const char *host, int port, const char *username, const char *database_name, const char *password)
 {
 	m_eDatabasetype = type;
-	
-#ifdef __MARIADB__
-	if (m_eDatabasetype == DATABASE_TYPE_MARIADB)
-	{
-		if (!m_Pointed_db)
-		{
-			MYSQL* connection1 = NULL, *connection2 = NULL;
-			connection2 = mysql_init(connection1);
-			
-			if (!connection1)
-				m_Pointed_db = (mdk_database)connection2;
-			else
-				m_Pointed_db = (mdk_database)connection1;
-		}
+	bIsConnecting = false;
 
-		if (port > 0)
-			m_uiProtocol = MYSQL_PROTOCOL_TCP;
-		else
-			m_uiProtocol = MYSQL_PROTOCOL_SOCKET;
-		
-		mysql_options((MYSQL*)m_Pointed_db, MYSQL_OPT_PROTOCOL, &m_uiProtocol);
-		
-		if (!mysql_real_connect((MYSQL*)m_Pointed_db, port > 0 ? host : NULL, username, password, database_name, port, port > 0 ? NULL : host, 0))
-		{
-			LOG_ERROR("Database", "Cannot connect to Database Server. Error: %s\n", mysql_error((MYSQL*)m_Pointed_db));
-			return false;
-		}
+#ifdef ENABLE_MYSQL_SUPPORT
+	if (m_eDatabasetype == DATABASE_TYPE_MYSQL)
+	{
+		AMY_ASIO_NS::io_service* io = (AMY_ASIO_NS::io_service*)io_service;
+		AMY_ASIO_NS::ip::tcp::endpoint ep;
+		amy::connector* connector = new amy::connector(*io);
+
+		ep = AMY_ASIO_NS::ip::tcp::endpoint(AMY_ASIO_NS::ip::address::from_string(host), port);
+				
+		connector->async_connect(ep, amy::auth_info(username, password), database_name, amy::default_flags, std::bind(amy_handle_connect, amy::placeholders::error));	
+		bIsConnecting = true;
+		m_Pointed_db = connector;
 	}
 #endif
-#ifdef __SQLITE__
+
+#ifdef ENABLE_SQLITE3_SUPPORT
 	if (m_eDatabasetype == DATABASE_TYPE_SQLITE)
 	{
 		if (sqlite3_open_v2(database_name, (sqlite3**)&m_Pointed_db, SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE, NULL)) {
@@ -91,14 +89,21 @@ MDKDLLAPI bool CDatabase::Connect(EDatabaseType type, const char *host, int port
 
 MDKDLLAPI void CDatabase::Disconnect()
 {
-#ifdef __MARIADB__
-	if ((m_Pointed_db) && m_eDatabasetype == DATABASE_TYPE_MARIADB)
-		mysql_close((MYSQL*)m_Pointed_db);
+	bIsConnecting = false;
+	
+#ifdef ENABLE_MYSQL_SUPPORT
+	if ((m_Pointed_db) && m_eDatabasetype == DATABASE_TYPE_MYSQL)
+	{
+		amy::connector* connector = (amy::connector*)m_Pointed_db;
+		delete connector;
+	}
 #endif
-#ifdef __SQLITE__
+
+#ifdef ENABLE_SQLITE3_SUPPORT
 	if ((m_Pointed_db) && m_eDatabasetype == DATABASE_TYPE_SQLITE)
 		sqlite3_close((sqlite3*)m_Pointed_db);
 #endif
+
 	m_Pointed_db = NULL;
 }
 
@@ -108,7 +113,7 @@ MDKDLLAPI bool CDatabase::IsConnected()
 		return false;
 
 #ifdef __MARIADB__
-	if (m_eDatabasetype == DATABASE_TYPE_MARIADB)
+	if (m_eDatabasetype == DATABASE_TYPE_MYSQL)
 	{
 		if (mysql_stat((MYSQL*)m_Pointed_db) == NULL)
 			return false;
@@ -120,3 +125,10 @@ MDKDLLAPI bool CDatabase::IsConnected()
 	
 	return true;
 }
+
+MDKDLLAPI bool CDatabase::IsConnecting()
+{
+	return bIsConnecting;
+}
+
+	

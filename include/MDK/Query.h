@@ -35,16 +35,16 @@
 class CResultSet
 {
 public:
-	MDKDLLAPI CResultSet(void* result_set);
+	MDKDLLAPI CResultSet();
 	MDKDLLAPI ~CResultSet();
 	
 	/**
 		Internal use only! This function is used to store async result set into
 		the result set, make sure to not use it!
 	*/
-	MDKDLLAPI void ProcessResultSet(void* rs);
+	MDKDLLAPI void ProcessResultSet(CDatabase* db, void* rs);
 	
-	inline MDKDLLAPI bool IsQueryExecuting() { return m_bExecuting }
+	inline MDKDLLAPI bool IsQueryExecuting();
 	
 	MDKDLLAPI bool ExecuteQuery(CDatabase* db, std::string str);
 

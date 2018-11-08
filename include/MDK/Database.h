@@ -44,7 +44,7 @@ public:
 	
 	NOTE: If port is lesser than 1, the host parametra will be considerated as UNIX Socket
 	*/
-	bool MDKDLLAPI Connect(EDatabaseType type, const char *host, int port, const char *username, const char *database_name, const char *password);
+	bool MDKDLLAPI Connect(void* io_service, EDatabaseType type, const char *host, int port, const char *username, const char *database_name, const char *password);
 	
 	/**
 	Function: Disconnect
@@ -62,14 +62,14 @@ public:
 	inline MDKDLLAPI EDatabaseType GetDatabaseType() { return m_eDatabasetype; }
 	inline MDKDLLAPI mdk_database GetDatabasePointer() { return m_Pointed_db; }
 
+	inline bool MDKDLLAPI IsConnecting();
+	
 private:
 	//Instantiation of mdk_database_pointer
 	mdk_database m_Pointed_db;
 
 	//Instantiation of EDatabaseType	
 	EDatabaseType m_eDatabasetype;
-	
-	unsigned int m_uiProtocol;
 };
 
 #endif

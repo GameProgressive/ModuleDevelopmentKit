@@ -66,11 +66,11 @@ if (WITH_MYSQL)
 		find_package(Boost REQUIRED COMPONENTS beast)
 	endif()
 
-	set(buid_examples OFF)
-	set(build_tests OFF)
 	add_subdirectory("amy")
 	include_directories("amy/include")
-
+	set(buid_examples OFF)
+	set(build_tests OFF)
+	
 	# Find any connector (MariaDB or MySQL, required by amy)
 	find_package(MariaDB)
 
@@ -79,8 +79,12 @@ if (WITH_MYSQL)
 	
 		find_package(MySQL REQUIRED)
 		set(MDK_DATABASE_LIBRARY ${MYSQL_LIBRARIES})
+		set(MDK_DATABASE_INCLUDE ${MYSQL_INCLUDE_DIR})
+		set(MDK_DATABASE_MARIADB 0)
 	else()
 		set(MDK_DATABASE_LIBRARY ${MARIADB_LIBRARIES})
+		set(MDK_DATABASE_INCLUDE ${MARIADB_INCLUDE_DIRS})
+		set(MDK_DATABASE_MARIADB 1)
 	endif()	
 endif()
 
@@ -119,7 +123,7 @@ set(MDK_LIBRARIES ${MDK_LIBRARIES} ${LIBUV_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 if (WITH_MYSQL)
 	set(MDK_LIBRARIES ${MDK_LIBRARIES} ${MDK_DATABASE_LIBRARY})
 	target_compile_definitions(MDK PUBLIC ENABLE_MYSQL_SUPPORT=1)
-	target_include_directories(MDK PRIVATE ${Boost_INCLUDE_DIRS})
+	target_include_directories(MDK PRIVATE ${Boost_INCLUDE_DIRS} ${MDK_DATABASE_INCLUDE})
 endif()
 
 if (WITH_SQLITE)
