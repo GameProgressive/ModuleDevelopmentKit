@@ -18,6 +18,7 @@
 #include "Utility.h"
 
 static bool bIsConnecting = false;
+static bool bIsConnected = false;
 
 #ifdef ENABLE_MYSQL_SUPPORT
 	#include "centosworkaround.h"
@@ -26,6 +27,9 @@ static bool bIsConnecting = false;
 	static void amy_handle_connect(AMY_SYSTEM_NS::error_code const& ec)
 	{
 		bIsConnecting = false;
+		
+		if (!ec)
+			bIsConnected = true;
 	}
 #endif
 
@@ -47,6 +51,7 @@ MDKDLLAPI CDatabase::CDatabase()
 
 	bIsConnecting = false;
 	m_Pointed_db = NULL;
+	bIsConnected = false;
 }
 
 MDKDLLAPI CDatabase::~CDatabase()
@@ -59,6 +64,9 @@ MDKDLLAPI bool CDatabase::Connect(void* io_service, EDatabaseType type, const ch
 	m_eDatabasetype = type;
 	bIsConnecting = false;
 
+	if (bIsConnected)
+		Disconnect();
+
 #ifdef ENABLE_MYSQL_SUPPORT
 	if (m_eDatabasetype == DATABASE_TYPE_MYSQL)
 	{
@@ -67,7 +75,12 @@ MDKDLLAPI bool CDatabase::Connect(void* io_service, EDatabaseType type, const ch
 		amy::connector* connector = new amy::connector(*io);
 
 		ep = AMY_ASIO_NS::ip::tcp::endpoint(AMY_ASIO_NS::ip::address::from_string(host), port);
-				
+		
+		connector->set_option(amy::options::reconnect(true));
+		connector->set_option(amy::options::connect_timeout(600));
+		connector->set_option(amy::options::read_timeout(10000));
+		connector->set_option(amy::options::write_timeout(10000));
+		
 		connector->async_connect(ep, amy::auth_info(username, password), database_name, amy::default_flags, std::bind(amy_handle_connect, amy::placeholders::error));	
 		bIsConnecting = true;
 		m_Pointed_db = connector;
@@ -90,6 +103,7 @@ MDKDLLAPI bool CDatabase::Connect(void* io_service, EDatabaseType type, const ch
 MDKDLLAPI void CDatabase::Disconnect()
 {
 	bIsConnecting = false;
+	bIsConnected = false;
 	
 #ifdef ENABLE_MYSQL_SUPPORT
 	if ((m_Pointed_db) && m_eDatabasetype == DATABASE_TYPE_MYSQL)
@@ -112,11 +126,10 @@ MDKDLLAPI bool CDatabase::IsConnected()
 	if (!m_Pointed_db)
 		return false;
 
-#ifdef __MARIADB__
+#ifdef ENABLE_MYSQL_SUPPORT
 	if (m_eDatabasetype == DATABASE_TYPE_MYSQL)
 	{
-		if (mysql_stat((MYSQL*)m_Pointed_db) == NULL)
-			return false;
+		return bIsConnected;
 	}
 #endif
 

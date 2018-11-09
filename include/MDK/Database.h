@@ -62,7 +62,7 @@ public:
 	inline MDKDLLAPI EDatabaseType GetDatabaseType() { return m_eDatabasetype; }
 	inline MDKDLLAPI mdk_database GetDatabasePointer() { return m_Pointed_db; }
 
-	inline bool MDKDLLAPI IsConnecting();
+	bool MDKDLLAPI IsConnecting();
 	
 private:
 	//Instantiation of mdk_database_pointer
