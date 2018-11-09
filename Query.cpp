@@ -45,14 +45,18 @@ static int sqlite3_query_exec_callback(void* user, int, char**, char**)
 #ifdef ENABLE_MYSQL_SUPPORT
 static void amy_handle_store_result(CDatabase* db, CResultSet* res, AMY_SYSTEM_NS::error_code const& ec, amy::result_set rs, amy::connector*)
 {
-	check_error(ec);
-	res->ProcessResultSet(db, (void*)&rs);
+	if (ec)
+		res->ProcessResultSet(db, NULL);
+	else
+		res->ProcessResultSet(db, (void*)&rs);
 }
 
 static void amy_handle_query(CDatabase* db, CResultSet* res, AMY_SYSTEM_NS::error_code const& ec, amy::connector* connector)
 {
-	check_error(ec);
-	connector->async_store_result(std::bind(amy_handle_store_result, db, res, amy::placeholders::error, amy::placeholders::result_set, connector));
+	if (ec)
+		res->ProcessResultSet(db, NULL);
+	else
+		connector->async_store_result(std::bind(amy_handle_store_result, db, res, amy::placeholders::error, amy::placeholders::result_set, connector));
 }
 #endif
 
@@ -81,6 +85,7 @@ MDKDLLAPI bool CResultSet::ExecuteQuery(CDatabase* db, std::string str)
 	{
 		m_bExecuting = true;
 		amy::connector* connector = (amy::connector*)db->GetDatabasePointer();
+		
 		connector->async_query(str, std::bind(amy_handle_query, db, this, amy::placeholders::error, connector));
 	}
 #endif
@@ -99,12 +104,17 @@ MDKDLLAPI void CResultSet::ProcessResultSet(CDatabase* db, void* _rs)
 	// Clear result set
 	size_t i = 0;
 	
+	m_bExecuting = false;
+	
 	for (; i < m_vvRows.size(); i++)
 	{
 		m_vvRows.at(i).clear();
 	}
 	
 	m_vvRows.clear();
+	
+	if (!_rs)
+		return;
 	
 #ifdef ENABLE_MYSQL_SUPPORT
 	if (db->GetDatabaseType() == DATABASE_TYPE_MYSQL)
@@ -131,8 +141,6 @@ MDKDLLAPI void CResultSet::ProcessResultSet(CDatabase* db, void* _rs)
 //#error "Missing Asynchronous support for SQLite3"
 	}
 #endif
-
-	m_bExecuting = false;
 }
 
 MDKDLLAPI size_t CResultSet::GetTotalRows()
@@ -199,6 +207,11 @@ MDKDLLAPI int CResultSet::GetIntFromRow(size_t index)
 		return 0;
 	
 	return atoi(m_vvRows.at(m_uiPos).at(index).c_str());
+}
+
+bool MDKDLLAPI CResultSet::IsQueryExecuting()
+{
+	return m_bExecuting;
 }
 
 bool MDKDLLAPI mdk_only_run_query(CDatabase* db, std::string query)

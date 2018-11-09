@@ -44,7 +44,7 @@ public:
 	*/
 	MDKDLLAPI void ProcessResultSet(CDatabase* db, void* rs);
 	
-	inline MDKDLLAPI bool IsQueryExecuting();
+	MDKDLLAPI bool IsQueryExecuting();
 	
 	MDKDLLAPI bool ExecuteQuery(CDatabase* db, std::string str);
 
