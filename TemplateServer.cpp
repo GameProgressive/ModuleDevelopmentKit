@@ -23,7 +23,7 @@
 
 // Parse callbacks from TemplateSocket
 extern void libuv_callback_on_close(uv_handle_t *handle);
-extern void libuv_callback_allocate_buffer(uv_handle_t *handle, unsigned long size, uv_buf_t* buf);
+extern void libuv_callback_allocate_buffer(uv_handle_t *handle, size_t size, uv_buf_t* buf);
 void libuv_callback_on_server_tcp_new_connection(uv_stream_t *server, int status);
 void libuv_callback_on_server_udp_read(uv_udp_t* handle, ssize_t nread, const uv_buf_t* recv, const struct sockaddr* addr, unsigned int flags);
 void libuv_callback_on_server_tcp_read(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf);
@@ -73,7 +73,7 @@ bool MDKDLLAPI CTemplateServer::Bind(const char *ip, int port, bool udp)
 
 	/* Listen the socket */
 	if (udp)
-		r = uv_udp_recv_start((uv_udp_t*)real_udp_socket, libuv_callback_allocate_buffer, libuv_callback_on_server_udp_read);
+		r = uv_udp_recv_start((uv_udp_t*)real_udp_socket, (uv_alloc_cb)libuv_callback_allocate_buffer, libuv_callback_on_server_udp_read);
 	else
 		r = uv_listen((uv_stream_t*)real_tcp_socket, DEFAULT_BACKLOG, libuv_callback_on_server_tcp_new_connection);
 

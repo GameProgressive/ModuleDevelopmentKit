@@ -23,7 +23,7 @@
 
 /* Prototypes */
 int uv_udp_getpeername(const uv_udp_t* handle, struct sockaddr* name, int* namelen);
-void libuv_callback_allocate_buffer(uv_handle_t *handle, unsigned long size, uv_buf_t* buf);
+void libuv_callback_allocate_buffer(uv_handle_t *handle, size_t size, uv_buf_t* buf);
 void libuv_callback_on_close(uv_handle_t *handle);
 void libuv_callback_when_tcp_write_finished(uv_write_t* req, int status);
 void libuv_callback_when_udp_write_finished(uv_udp_send_t* req, int);
@@ -180,7 +180,7 @@ void libuv_callback_when_udp_write_finished(uv_udp_send_t* req, int)
 		free(req);
 }
 
-void libuv_callback_allocate_buffer(uv_handle_t*, unsigned long size, uv_buf_t *buf)
+void libuv_callback_allocate_buffer(uv_handle_t*, size_t size, uv_buf_t *buf)
 {
 	*buf = uv_buf_init((char*)malloc(size), size);
 }
