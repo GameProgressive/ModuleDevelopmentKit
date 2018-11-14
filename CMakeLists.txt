@@ -128,7 +128,7 @@ endif()
 add_library(MDK SHARED ${SOURCES})
 target_link_libraries(MDK ${MDK_LIBRARIES})
 
-if (WITH_MARIADB)
+if (WITH_MARIADB OR WITH_MYSQL)
 	target_compile_definitions(MDK PUBLIC __MARIADB__=1)
 endif()
 if (WITH_SQLITE)
