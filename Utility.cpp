@@ -45,7 +45,7 @@ bool MDKDLLAPI strendswith(const char *buffer, const char *what)
 	return false;
 }
 
-bool MDKDLLAPI strdelete(char *buffer, size_t buffersize, int number)
+bool MDKDLLAPI strdelete(char *buffer, size_t buffersize, size_t number)
 {
 	size_t counter = 0;
 

@@ -19,7 +19,7 @@
 
 // String processing functions
 bool MDKDLLAPI strendswith(const char *buffer, const char *what);
-bool MDKDLLAPI strdelete(char *buffer, size_t buffersize, int number);
+bool MDKDLLAPI strdelete(char *buffer, size_t buffersize, size_t number);
 void MDKDLLAPI strrand(char *buffer, size_t buffersize, const char *table);
 bool MDKDLLAPI strfind(char *buffer, const char what);
 bool MDKDLLAPI strstartswith(const char *buffer, const char *what);
