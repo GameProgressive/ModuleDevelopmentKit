@@ -24,8 +24,9 @@ enum ESocketType
 	SOCKET_TCP,
 	SOCKET_UDP
 };
-
+//define a void socket pointer which can point to a socket
 typedef void* mdk_socket;
+
 typedef void* mdk_loop;
 
 class CClientData

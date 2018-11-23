@@ -162,6 +162,8 @@ void libuv_callback_on_server_tcp_read(uv_stream_t *stream, ssize_t nread, const
 		return;
 	}
 
+	buf->base[nread] = '\0';
+
 #ifdef _DEBUG
 	LOG_INFO("Server", "TCP: Received %s from client", buf->base);
 #endif

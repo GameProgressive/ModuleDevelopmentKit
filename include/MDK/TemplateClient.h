@@ -23,7 +23,7 @@
 	natneg1.gamespy.com (Server 1)
 	gpsp.gamespy.com (Server 2)
 
-	natneg send this: /valid/blalkba/final/ to gpsp.gamespy.com with CTemplateClient
+	natneg send this: /valid/randomcode/final/ to gpsp.gamespy.com with CTemplateClient
 
 */
 class CTemplateClient : public CTemplateSocket
