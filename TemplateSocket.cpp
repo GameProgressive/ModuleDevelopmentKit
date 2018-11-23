@@ -75,7 +75,7 @@ void MDKDLLAPI CTemplateSocket::StopServer()
 	uv_stop((uv_loop_t*)m_loop);
 }
 
-void MDKDLLAPI CTemplateSocket::WriteTCP(mdk_socket socket, void *data, int size)
+void MDKDLLAPI CTemplateSocket::WriteTCP(mdk_socket socket, void *data, size_t size)
 {
 	uv_write_t *req = (uv_write_t*)malloc(sizeof(uv_write_t));
 	uv_buf_t buf;
@@ -90,7 +90,7 @@ void MDKDLLAPI CTemplateSocket::WriteTCP(mdk_socket socket, void *data, int size
 	uv_write(req, real_socket, &buf, 1, libuv_callback_when_tcp_write_finished);
 }
 
-void MDKDLLAPI CTemplateSocket::WriteUDP(mdk_socket socket, void *data, int size, const struct sockaddr* addr)
+void MDKDLLAPI CTemplateSocket::WriteUDP(mdk_socket socket, void *data, size_t size, const struct sockaddr* addr)
 {
 	uv_udp_send_t* req = (uv_udp_send_t*)malloc(sizeof(uv_udp_send_t));
 	uv_buf_t buf;

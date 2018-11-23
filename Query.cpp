@@ -113,7 +113,7 @@ MDKDLLAPI bool CResultSet::ExecuteQuery(CDatabase* db, std::string str)
 	{
 		sqlite3_stmt* stmt = NULL;
 		
-		if (sqlite3_prepare_v2((sqlite3*)db->GetDatabasePointer(), str.c_str(), str.length(), &stmt, NULL) != SQLITE_OK)
+		if (sqlite3_prepare_v2((sqlite3*)db->GetDatabasePointer(), str.c_str(), (int)str.length(), &stmt, NULL) != SQLITE_OK)
 		{
 			LOG_ERROR("Query", "Cannot execute query. Error: %s\n", sqlite3_errmsg((sqlite3*)db->GetDatabasePointer()));
 			return false;
@@ -262,7 +262,7 @@ bool MDKDLLAPI mdk_escape_query_string(CDatabase* db, std::string& inputString)
 		if (!temporanyString)
 			return false; // Out of memory, return null string
 
-		mysql_real_escape_string((MYSQL*)db->GetDatabasePointer(), temporanyString, inputString.c_str(), inputString.length());
+		mysql_real_escape_string((MYSQL*)db->GetDatabasePointer(), temporanyString, inputString.c_str(), (int)inputString.length());
 		inputString = std::string(temporanyString);
 
 		free(temporanyString);

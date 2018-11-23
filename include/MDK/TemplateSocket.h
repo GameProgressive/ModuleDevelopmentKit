@@ -79,11 +79,11 @@ public:
 	
 	/* Write some data to the socket */
 	static void MDKDLLAPI WriteTCP(mdk_socket socket, std::string str);
-	static void MDKDLLAPI WriteTCP(mdk_socket socket, void *data, int size);
+	static void MDKDLLAPI WriteTCP(mdk_socket socket, void *data, size_t size);
 	static void MDKDLLAPI WriteTCP(mdk_socket socket, const char* data);
 
 	static void MDKDLLAPI WriteUDP(mdk_socket socket, std::string str, const struct sockaddr* addr);
-	static void MDKDLLAPI WriteUDP(mdk_socket socket, void *data, int size, const struct sockaddr* addr);
+	static void MDKDLLAPI WriteUDP(mdk_socket socket, void *data, size_t size, const struct sockaddr* addr);
 	static void MDKDLLAPI WriteUDP(mdk_socket socket, const char* data, const struct sockaddr* addr);
 	
 	static int MDKDLLAPI GetIPFromSocket(mdk_socket socket);

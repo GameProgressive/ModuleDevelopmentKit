@@ -23,7 +23,7 @@
 
 bool MDKDLLAPI strendswith(const char *buffer, const char *what)
 {
-	int endsize = strlen(what), buffsize = strlen(buffer);
+	size_t endsize = strlen(what), buffsize = strlen(buffer);
 	char *checkbuf = (char *)malloc(sizeof(char) * (endsize + 1));
 
 	for (; endsize > -1; buffsize--, endsize--)
@@ -45,9 +45,9 @@ bool MDKDLLAPI strendswith(const char *buffer, const char *what)
 	return false;
 }
 
-bool MDKDLLAPI strdelete(char *buffer, int buffersize, int number)
+bool MDKDLLAPI strdelete(char *buffer, size_t buffersize, size_t number)
 {
-	int counter = 0;
+	size_t counter = 0;
 
 	if (buffersize < number)
 		return false;
@@ -64,9 +64,9 @@ bool MDKDLLAPI strdelete(char *buffer, int buffersize, int number)
 	return true;
 }
 
-void MDKDLLAPI strrand(char *buffer, int buffersize, const char *table)
+void MDKDLLAPI strrand(char *buffer, size_t buffersize, const char *table)
 {
-	int table_len = strlen(table), i = 0;
+	size_t table_len = strlen(table), i = 0;
 
 	for (; i < (buffersize - 1); i++)
 	{
@@ -92,7 +92,7 @@ bool MDKDLLAPI strfind(char *buffer, const char what)
 
 bool MDKDLLAPI strstartswith(const char* buffer, const char* what)
 {
-	unsigned int whatsize = strlen(what), count = 0;
+	size_t whatsize = strlen(what), count = 0;
 	char *checkbuf = (char *)malloc(sizeof(char) * (whatsize + 1));
 
 	if (whatsize > strlen(buffer))
